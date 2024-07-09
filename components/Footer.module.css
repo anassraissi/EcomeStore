@@ -1,0 +1,44 @@
+/* components/Footer.module.css */
+.footerArea {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #333;
+    color: white;
+    padding: 20px 0;
+    transition: transform 0.3s ease;
+    transform: translateY(100%);
+    z-index: 1000; /* Ensure footer is above other content */
+  }
+  
+  .footerArea:hover {
+    transform: translateY(0);
+  }
+  
+  .initialCopyright {
+    opacity: 1; /* Initially visible */
+    transition: opacity 0.3s ease;
+  }
+  
+  .fullCopyright {
+    opacity: 0; /* Initially hidden */
+    transition: opacity 0.3s ease;
+  }
+  
+  /* Show full copyright message on hover */
+  .copyright:hover .fullCopyright {
+    opacity: 1;
+  }
+  
+  /* Example styles for other footer sections */
+  .footerHeading {
+    color: #fff;
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+  
+  .fullFooter p {
+    color: #ccc;
+  }
+  

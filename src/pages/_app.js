@@ -6,10 +6,19 @@ import Layout from '../../components/Layout';
 import { AuthProvider } from '../../context/AuthContext';
 import { useRouter } from 'next/router';
 import 'bootstrap/dist/css/bootstrap.min.css'; // Import Bootstrap CSS globally
+import 'font-awesome/css/font-awesome.min.css';
+import { useEffect } from 'react';
+
 
 
 
 function MyApp({ Component, pageProps }) {
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      import('bootstrap/dist/js/bootstrap.bundle.min.js');
+    }
+  }, []);
+
   const router=useRouter();
   const noLayoutPaths = ['/Login','/Register'];
 
