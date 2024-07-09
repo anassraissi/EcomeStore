@@ -3,10 +3,8 @@ import RegisterForm from '../../components/RegisterForm'
 
 const Register = () => {
   return (
-    <div>Register
 
         <RegisterForm></RegisterForm>
-    </div>
   )
 }
 

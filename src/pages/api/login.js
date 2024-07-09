@@ -3,6 +3,7 @@
 import { loginUser } from "../../../utils/auth";
 
 export default async function handler(req, res) {
+  console.log("yess");
   if (req.method === 'POST') {
     const { email, password } = req.body;
 console.log(email,password);

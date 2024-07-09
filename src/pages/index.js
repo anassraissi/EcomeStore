@@ -11,9 +11,10 @@ const DashboardPage = () => {
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
     setToken(storedToken);
+    console.log(token);
 
     if (!storedToken) {
-      router.push('/login');
+      router.push('/Login');
     }
   }, []);
 
