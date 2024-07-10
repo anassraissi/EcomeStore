@@ -11,12 +11,12 @@ const Navbar = () => {
   const {logout}=useAuth(); 
   const router=useRouter();
   useEffect(()=>{
-    setUsername(localStorage.getItem('username'))
+    localStorage.getItem('username') ? setUsername(localStorage.getItem('username')) :setUsername('Connexion')    
   },[])
   const logOut=(e)=>{
-    console.log("yess");
     logout();
-    router.replace('/Login');
+    router.replace('/');
+    localStorage.getItem('username') ? setUsername(localStorage.getItem('username')) :setUsername('Connexion')    
   }
 
   return (
@@ -43,7 +43,17 @@ const Navbar = () => {
             </div>
             <div className="col-md-5 my-auto">
               <ul className="nav justify-content-end">
-                <li className="nav-item">
+
+              {username!="Connexion" ?
+              <>
+              <li className="nav-item">
+                                  <Link href="/cart"  legacyBehavior>
+                                    <a className="nav-link">
+                                      <i className="fa fa-shopping-cart"></i> Cart (0)
+                                    </a>
+                                  </Link>
+                                </li>
+                                                <li className="nav-item">
                   <Link href="/cart"  legacyBehavior>
                     <a className="nav-link">
                       <i className="fa fa-shopping-cart"></i> Cart (0)
@@ -57,6 +67,7 @@ const Navbar = () => {
                     </a>
                   </Link>
                 </li>
+                
                 <li className="nav-item dropdown"> 
                   <a
                     className="nav-link dropdown-toggle"
@@ -66,7 +77,7 @@ const Navbar = () => {
                     data-bs-toggle="dropdown"
                     aria-expanded="false"
                   >
-                    <i className="fa fa-user"></i> {username}
+                  <i className="fa fa-user"></i> {username}
                   </a>
                   <ul className="dropdown-menu" aria-labelledby="navbarDropdown">
                     <li>
@@ -112,6 +123,18 @@ const Navbar = () => {
                     </li>
                   </ul>
                 </li>
+              </>  :
+                       
+                       <li>
+                       <Link href="/Login" legacyBehavior>
+                         <a className="connexion">
+                           <i className="fa fa-user"></i> Connextion
+                           </a>
+                       </Link>
+                     </li>
+              } 
+
+
               </ul>
             </div>
           </div>
@@ -183,7 +206,7 @@ const Navbar = () => {
             </ul>
           </div>
         </div>
-      </nav>
+      </nav>      
     </div>
   );
 };

@@ -11,7 +11,6 @@ const RegisterForm = () => {
     confirmPassword: '',
     role: 'user' // Default role
   });
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -50,7 +49,6 @@ const RegisterForm = () => {
                       />
                       <label className="form-label" htmlFor="form3Example1cg">Your Name</label>
                     </div>
-
                     <div data-mdb-input-init className="form-outline mb-4">
                       <input
                         type="email"

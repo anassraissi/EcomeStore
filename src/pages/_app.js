@@ -9,9 +9,6 @@ import 'bootstrap/dist/css/bootstrap.min.css'; // Import Bootstrap CSS globally
 import 'font-awesome/css/font-awesome.min.css';
 import { useEffect, useState } from 'react';
 
-
-
-
 function MyApp({ Component, pageProps }) {
 
   const router = useRouter();
@@ -20,11 +17,6 @@ function MyApp({ Component, pageProps }) {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       import('bootstrap/dist/js/bootstrap.bundle.min.js');
-    }
-    const storedToken = localStorage.getItem('token');
-    setToken(storedToken);
-    if (!storedToken) {
-      router.push('/Login');
     }
   }, []);
 

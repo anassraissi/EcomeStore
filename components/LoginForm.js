@@ -21,6 +21,7 @@ const LoginForm = () => {
       const { user, token } = await login(email, password);
       localStorage.setItem('token', token); // Store token in localStorage// Store token in localStorage
       localStorage.setItem('username', user.name); // Store token in localStorage// Store token in localStorage
+      localStorage.setItem('role', user.role); // Store token in localStorage// Store token in localStorage
       router.push('/');
       toast.success('Login successful!');
     } catch (error) {

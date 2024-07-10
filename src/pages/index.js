@@ -6,10 +6,9 @@ import { useAuth } from '../../context/AuthContext';
 import Layout from '../../components/Layout';
 const DashboardPage = () => {
 
-
   return (
-      <>
-      </>
+    <>
+    </>
   );
 };
 
