@@ -3,20 +3,20 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useAuth } from '../context/AuthContext';
+import { useRouter } from 'next/router';
 
 const Navbar = () => {
 
-  const [userSession, setUserSession] = useState(null);
-  const {logout}=useAuth();
-  useEffect(() => {
-    const storedToken = localStorage.getItem('user');
-    setUserSession(storedToken);
-    console.log(userSession);
-  }, []);
-  
+  const [username, setUsername] = useState("");
+  const {logout}=useAuth(); 
+  const router=useRouter();
+  useEffect(()=>{
+    setUsername(localStorage.getItem('username'))
+  },[])
   const logOut=(e)=>{
     console.log("yess");
     logout();
+    router.replace('/Login');
   }
 
   return (
@@ -57,7 +57,7 @@ const Navbar = () => {
                     </a>
                   </Link>
                 </li>
-                <li className="nav-item dropdown">
+                <li className="nav-item dropdown"> 
                   <a
                     className="nav-link dropdown-toggle"
                     href="#"
@@ -66,13 +66,20 @@ const Navbar = () => {
                     data-bs-toggle="dropdown"
                     aria-expanded="false"
                   >
-                    <i className="fa fa-user"></i> Username
+                    <i className="fa fa-user"></i> {username}
                   </a>
                   <ul className="dropdown-menu" aria-labelledby="navbarDropdown">
                     <li>
                       <Link href="/profile" legacyBehavior>
                         <a className="dropdown-item">
                           <i className="fa fa-user"></i> Profile
+                          </a>
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/Register" legacyBehavior>
+                        <a className="dropdown-item">
+                          <i className="fa fa-user"></i> Register
                           </a>
                       </Link>
                     </li>

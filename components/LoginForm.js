@@ -11,7 +11,7 @@ const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const { login, setUser } = useAuth();
+  const { login } = useAuth();
   const router = useRouter();
 
   const handleLogin = async (e) => {
@@ -19,9 +19,8 @@ const LoginForm = () => {
 
     try {
       const { user, token } = await login(email, password);
-      setUser(user);
-      localStorage.setItem('token', token); // Store token in localStorage
-      localStorage.setItem('user', user); // Store token in localStorage
+      localStorage.setItem('token', token); // Store token in localStorage// Store token in localStorage
+      localStorage.setItem('username', user.name); // Store token in localStorage// Store token in localStorage
       router.push('/');
       toast.success('Login successful!');
     } catch (error) {
@@ -29,7 +28,6 @@ const LoginForm = () => {
       toast.error('Login failed. Please check your credentials.');
     }
   };
-
   return (
     <section className={`vh-100 ${styles.gradientCustom}`}>
       <div className="container py-5 h-100">

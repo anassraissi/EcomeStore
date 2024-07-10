@@ -11,7 +11,7 @@ export function AuthProvider({ children }) {
   const login = async (email, password) => {
     try {
       const response = await axios.post('/api/login', { email, password });
-      console.log("response: ",response);
+      // console.log("response: ",response);
       const { token, user } = response.data;
       setUser(user);
       return {user,token}
@@ -27,7 +27,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, setUser }}>
+    <AuthContext.Provider value={{ user, login, logout, setUser}}>
       {children}
     </AuthContext.Provider>
   );
