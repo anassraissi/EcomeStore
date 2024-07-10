@@ -11,7 +11,7 @@ const DashboardPage = () => {
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
     setToken(storedToken);
-    console.log(token);
+    console.log(user);
 
     if (!storedToken) {
       router.push('/Login');

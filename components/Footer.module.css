@@ -1,44 +1,55 @@
-/* components/Footer.module.css */
+/* Footer.module.css */
+
 .footerArea {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background-color: #333;
-    color: white;
-    padding: 20px 0;
-    transition: transform 0.3s ease;
-    transform: translateY(100%);
-    z-index: 1000; /* Ensure footer is above other content */
-  }
-  
-  .footerArea:hover {
-    transform: translateY(0);
-  }
-  
-  .initialCopyright {
-    opacity: 1; /* Initially visible */
-    transition: opacity 0.3s ease;
-  }
-  
-  .fullCopyright {
-    opacity: 0; /* Initially hidden */
-    transition: opacity 0.3s ease;
-  }
-  
-  /* Show full copyright message on hover */
-  .copyright:hover .fullCopyright {
-    opacity: 1;
-  }
-  
-  /* Example styles for other footer sections */
-  .footerHeading {
-    color: #fff;
-    font-size: 18px;
-    margin-bottom: 10px;
-  }
-  
-  .fullFooter p {
-    color: #ccc;
-  }
-  
+  background-color: #2874f0;
+  color: #fff;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+  max-height: 50px; /* Set initial height */
+  overflow: hidden; /* Hide overflow */
+}
+
+.footerArea:hover {
+  max-height: 1000px; /* Adjust as needed to reveal full content */
+  opacity: 1;
+}
+
+.footerArea a {
+  text-decoration: none;
+}
+
+.footerHeading {
+  font-size: 24px;
+  color: #fff;
+}
+
+.footerUnderline {
+  height: 1px;
+  width: 70px;
+  background-color: #ddd;
+  margin: 10px 0px;
+}
+
+.initialCopyright {
+  text-align: center;
+  opacity: 1; /* Initially visible */
+  transition: opacity 0.3s ease;
+  font-weight: bold;
+}
+
+.fullCopyright {
+  opacity: 0; /* Initially hidden */
+  transition: opacity 0.3s ease;
+}
+
+.copyright:hover .fullCopyright {
+  opacity: 1;
+}
+
+.fullFooter {
+  opacity: 0; /* Initially hidden */
+  transition: opacity 0.3s ease;
+}
+
+.footerArea:hover .fullFooter {
+  opacity: 1;
+}

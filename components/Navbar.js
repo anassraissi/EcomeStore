@@ -1,10 +1,24 @@
 // components/Navbar.js
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import 'font-awesome/css/font-awesome.min.css';
+import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
+
+  const [userSession, setUserSession] = useState(null);
+  const {logout}=useAuth();
+  useEffect(() => {
+    const storedToken = localStorage.getItem('user');
+    setUserSession(storedToken);
+    console.log(userSession);
+  }, []);
+  
+  const logOut=(e)=>{
+    console.log("yess");
+    logout();
+  }
+
   return (
     <div className="main-navbar shadow-sm sticky-top">
       <div className="top-navbar">
@@ -84,11 +98,10 @@ const Navbar = () => {
                       </Link>
                     </li>
                     <li>
-                      <Link href="/logout" legacyBehavior>
-                        <a className="dropdown-item">
+    
+                        <a className="dropdown-item" onClick={logOut}>
                           <i className="fa fa-sign-out"></i> Logout
                           </a>
-                      </Link>
                     </li>
                   </ul>
                 </li>
