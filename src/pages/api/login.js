@@ -6,7 +6,6 @@ export default async function handler(req, res) {
   console.log("yess");
   if (req.method === 'POST') {
     const { email, password } = req.body;
-console.log(email,password);
     try {
       const { token, user } = await loginUser(email, password);
       res.status(200).json({ token, user });

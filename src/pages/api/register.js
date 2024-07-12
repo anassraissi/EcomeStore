@@ -11,9 +11,6 @@ export default async function handler(req, res) {
   }
 
   const { name, email, password, role } = req.body;
-  console.log('====================================');
-  console.log(role);
-  console.log('====================================');
 
   try {
     // Check if user already exists
@@ -26,7 +23,7 @@ export default async function handler(req, res) {
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
-
+    console.log(hashedPassword);
     // Create new user
     user = new User({
       name,

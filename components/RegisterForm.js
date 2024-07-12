@@ -1,9 +1,19 @@
 // components/RegisterForm.js
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import styles from './RegisterForm.module.css'; // Import the CSS module
+import { useRouter } from 'next/router';
 
-const RegisterForm = () => {
+const RegisterForm = ({ closeModal }) => {
+  const router = useRouter();
+
+  const [role, setRole] = useState("")
+  useEffect(()=>{
+    if((localStorage.getItem('role')=='admin')){
+      setRole(localStorage.getItem('role'))
+    }
+  },[])
+  
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -11,6 +21,7 @@ const RegisterForm = () => {
     confirmPassword: '',
     role: 'user' // Default role
   });
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -21,118 +32,63 @@ const RegisterForm = () => {
     try {
       const response = await axios.post('/api/register', formData);
       console.log('Registration successful!', response.data);
+      toast.success('Register successful!');
+      router.push('/');
       // Optionally redirect to login page or home page after successful registration
+      closeModal(); // Close modal after successful registration
     } catch (error) {
       console.error('Registration failed!', error);
     }
   };
 
   return (
-    <section className="vh-100 bg-image">
-      <div className={`mask d-flex align-items-center h-100 ${styles.gradientCustom3}`}>
-        <div className="container h-100">
-          <div className="row d-flex justify-content-center align-items-center h-100">
-            <div className="col-12 col-md-9 col-lg-7 col-xl-6">
-              <div className="card" style={{ borderRadius: '15px' }}>
-                <div className="card-body p-5">
-                  <h2 className="text-uppercase text-center mb-5">Create an account</h2>
-                  <form onSubmit={handleSubmit}>
-                    <div data-mdb-input-init className="form-outline mb-4">
-                      <input
-                        type="text"
-                        id="form3Example1cg"
-                        className="form-control form-control-lg"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        required
-                      />
-                      <label className="form-label" htmlFor="form3Example1cg">Your Name</label>
-                    </div>
-                    <div data-mdb-input-init className="form-outline mb-4">
-                      <input
-                        type="email"
-                        id="form3Example3cg"
-                        className="form-control form-control-lg"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        required
-                      />
-                      <label className="form-label" htmlFor="form3Example3cg">Your Email</label>
-                    </div>
-
-                    <div data-mdb-input-init className="form-outline mb-4">
-                      <input
-                        type="password"
-                        id="form3Example4cg"
-                        className="form-control form-control-lg"
-                        name="password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        required
-                      />
-                      <label className="form-label" htmlFor="form3Example4cg">Password</label>
-                    </div>
-
-                    <div data-mdb-input-init className="form-outline mb-4">
-                      <input
-                        type="password"
-                        id="form3Example4cdg"
-                        className="form-control form-control-lg"
-                        name="confirmPassword"
-                        value={formData.confirmPassword}
-                        onChange={handleChange}
-                        required
-                      />
-                      <label className="form-label" htmlFor="form3Example4cdg">Repeat your password</label>
-                    </div>
-
-                    <div data-mdb-input-init className="form-outline mb-4">
-                      <select
-                        id="form3Example5cg"
-                        className="form-control form-control-lg"
-                        name="role"
-                        value={formData.role}
-                        onChange={handleChange}
-                        required
-                      >
-                        <option value="user">User</option>
-                        <option value="admin">Admin</option>
-                        <option value="operator">Operator</option>
-                      </select>
-                      <label className="form-label" htmlFor="form3Example5cg">Role</label>
-                    </div>
-
-                    <div className="form-check d-flex justify-content-center mb-5">
-                      <input className="form-check-input me-2" type="checkbox" value="" id="form2Example3cg" />
-                      <label className="form-check-label" htmlFor="form2Example3cg">
-                        I agree to all statements in <a href="#!" className="text-body"><u>Terms of service</u></a>
-                      </label>
-                    </div>
-
-                    <div className="d-flex justify-content-center">
-                      <button
-                        type="submit"
-                        data-mdb-button-init
-                        data-mdb-ripple-init
-                        className={`btn btn-success btn-block btn-lg ${styles.gradientCustom4} text-body`}
-                      >
-                        Register
-                      </button>
-                    </div>
-
-                    <p className="text-center text-muted mt-5 mb-0">
-                      Already have an account? <a href="#!" className="fw-bold text-body"><u>Login here</u></a>
-                    </p>
-                  </form>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+    <div className="modal-content">
+      <div className="modal-header">
+        <h5 className="modal-title" id="registerModalLabel">Register</h5>
+        <button type="button" className="btn-close" onClick={closeModal}></button>
       </div>
-    </section>
+      <div className="modal-body">
+        <form onSubmit={handleSubmit}>
+          {/* Form fields */}
+          {/* Example: Name */}
+          <div className="mb-3">
+            <label htmlFor="nameInput" className="form-label">Name</label>
+            <input type="text" className="form-control" id="nameInput" name="name" value={formData.name} onChange={handleChange} required />
+          </div>
+
+          {/* Example: Email */}
+          <div className="mb-3">
+            <label htmlFor="emailInput" className="form-label">Email address</label>
+            <input type="email" className="form-control" id="emailInput" name="email" value={formData.email} onChange={handleChange} required />
+          </div>
+
+          {/* Example: Password */}
+          <div className="mb-3">
+            <label htmlFor="passwordInput" className="form-label">Password</label>
+            <input type="password" className="form-control" id="passwordInput" name="password" value={formData.password} onChange={handleChange} required />
+          </div>
+
+          {/* Example: Confirm Password */}
+          <div className="mb-3">
+            <label htmlFor="confirmPasswordInput" className="form-label">Confirm Password</label>
+            <input type="password" className="form-control" id="confirmPasswordInput" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} required />
+          </div>
+        {role && 
+                  <div className="mb-3">
+                  <label htmlFor="roleSelect" className="form-label">Role</label>
+                  <select className="form-select" id="roleSelect" name="role" value={formData.role} onChange={handleChange} required>
+                    <option value="admin">Admin</option>
+                    <option value="operator">Operator</option>
+                  </select>
+                </div>
+        }
+          {/* Example: Role (select dropdown) */}
+
+          {/* Submit button */}
+          <button type="submit" className="btn btn-primary">Register</button>
+        </form>
+      </div>
+    </div>
   );
 };
 
