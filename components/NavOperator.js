@@ -81,12 +81,12 @@ const NavOperator = () => {
           <div className="collapse navbar-collapse" id="navbarSupportedContent">
             <ul className="navbar-nav me-auto mb-2 mb-lg-0">
               <li className="nav-item">
-                <Link href="/" legacyBehavior>
+                <Link href="/AddProduct" legacyBehavior>
                   <a className="nav-link">Add Product</a>
                 </Link>
               </li>
               <li className="nav-item">
-                <Link href="/categories" legacyBehavior> 
+                <Link href="/AddCategories" legacyBehavior> 
                   <a className="nav-link">Add Categories</a>
                 </Link>
               </li>

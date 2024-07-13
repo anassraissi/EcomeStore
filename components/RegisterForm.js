@@ -33,7 +33,7 @@ const RegisterForm = ({ closeModal }) => {
       const response = await axios.post('/api/register', formData);
       console.log('Registration successful!', response.data);
       toast.success('Register successful!');
-      router.push('/');
+      router.reload('/');
       // Optionally redirect to login page or home page after successful registration
       closeModal(); // Close modal after successful registration
     } catch (error) {
