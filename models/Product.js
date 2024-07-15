@@ -22,10 +22,12 @@ const ProductSchema = new mongoose.Schema({
     enum: ['Men', 'Women', 'Both'],
     required: true,
   },
-  imageUrl: {
-    type: String,
-    required: true,
-  },
+  imageUrls: [
+    {
+      type: String,
+      required: true,
+    },
+  ],
   stock: {
     type: Number,
     required: true,

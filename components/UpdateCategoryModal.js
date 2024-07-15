@@ -30,7 +30,9 @@ const UpdateCategoryModal = ({ category, onClose }) => {
     formData.append('parent_id', parentCategoryId);
     if (image) {
       formData.append('image', image);
+      console.log(image);
     }
+    
 
     const res = await fetch(`/api/categories/${category._id}`, {
       method: 'PUT',

@@ -16,7 +16,7 @@ export default async function handler(req, res) {
 
   if (method === 'PUT') {
     const form = formidable({
-      uploadDir: path.join(process.cwd(), 'public', 'uploads'),
+      uploadDir: path.join(process.cwd(), 'public', 'images', 'uploads', 'categories'),
       keepExtensions: true,
     });
 
@@ -47,7 +47,17 @@ export default async function handler(req, res) {
         res.status(400).json({ success: false, error: 'Database error' });
       }
     });
-  } else {
+  }
+  if (method === 'DELETE') {
+
+  try {
+    await Category.findByIdAndDelete(id);
+    res.status(200).json({ success: true });
+  } catch (error) {
+    res.status(400).json({ success: false });
+  }
+  }
+  else {
     res.status(405).json({ success: false, error: 'Method not allowed' });
   }
 }

@@ -15,7 +15,7 @@ export default async function handler(req, res) {
 
   if (req.method === 'POST') {
     const form = formidable({
-      uploadDir: path.join(process.cwd(), 'public', 'uploads'),
+      uploadDir: path.join(process.cwd(), 'public', 'images', 'uploads', 'categories'),
       keepExtensions: true,
     });
 
