@@ -4,6 +4,28 @@ import { Modal, Button, Form } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 
 const UpdateProductModal = ({ product, onClose }) => {
+  const [categories, setCategories] = useState([]);
+
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch('/api/categories');
+      const data = await res.json();
+      if (data.success) {
+        const filteredCategories = data.data.filter(category => category.parent_id !== null);
+
+        setCategories(filteredCategories);
+      } else {
+        console.error('Failed to fetch categories:', data.error);
+      }
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
+  useEffect(()=>{
+    fetchCategories();
+  },[])
+
+  
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -100,16 +122,23 @@ const UpdateProductModal = ({ product, onClose }) => {
               required
             />
           </Form.Group>
-          <Form.Group>
-            <Form.Label>Category</Form.Label>
-            <Form.Control
-              type="text"
-              name="category"
-              value={formData.category}
-              onChange={handleChange}
-              required
-            />
-          </Form.Group>
+          <Form.Group controlId="formProductCategory">
+        <Form.Label>Category</Form.Label>
+        <Form.Control
+          as="select"
+          name="category"
+          value={formData.category}
+          onChange={handleChange}
+          required
+        >
+          <option value="">Select Category</option>
+          {categories.map((category) => (
+            <option key={category._id} value={category._id}>
+              {category.name}
+            </option>
+          ))}
+        </Form.Control>
+      </Form.Group>
           <Form.Group>
             <Form.Label>Sex</Form.Label>
             <Form.Control

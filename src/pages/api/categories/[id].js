@@ -25,13 +25,12 @@ export default async function handler(req, res) {
         console.error('Formidable error:', err);
         return res.status(500).json({ success: false, error: 'Form parsing error' });
       }
-
       const name = Array.isArray(fields.name) ? fields.name[0] : fields.name;
       const parentId = Array.isArray(fields.parent_id) ? fields.parent_id[0] : fields.parent_id;
 
       let imgUrl = '';
       if (files.image && files.image[0].newFilename) {
-        imgUrl = `/uploads/${files.image[0].newFilename}`;
+        imgUrl = `images/uploads/categories/${files.image[0].newFilename}`;
       }
 
       try {
@@ -40,7 +39,6 @@ export default async function handler(req, res) {
           parent_id: parentId || null,
           ...(imgUrl && { img_url: imgUrl }), // Only update img_url if there's a new image
         }, { new: true });
-
         res.status(200).json(updatedCategory);
       } catch (error) {
         console.error('Database error:', error);
@@ -48,8 +46,7 @@ export default async function handler(req, res) {
       }
     });
   }
-  if (method === 'DELETE') {
-
+  else if (method === 'DELETE') {
   try {
     await Category.findByIdAndDelete(id);
     res.status(200).json({ success: true });

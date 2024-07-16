@@ -1,42 +1,48 @@
-import { useState, useEffect } from 'react';
-import ProductForm from '../../components/ProductForm';
-import UpdateProductModal from '../../components/UpdateProductModal';
+import React, { useState, useEffect } from 'react';
 import { Table } from 'react-bootstrap';
+import UpdateProductModal from '../../components/UpdateProductModal';
+import ProductForm from '../../components/ProductForm';
 
-const ManageProducts = () => {
+const AddProduct = () => {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fetchProducts = async () => {
-    const res = await fetch('/api/products');
-    const data = await res.json();
-    if (data.success) {
-      setProducts(data);
+    try {
+      const res = await fetch('/api/products');
+      const data = await res.json();
+      if (data.success) {
+        setProducts(data.data);
+        console.log(products); // Assuming data is structured with 'data' field containing products array
+      } else {
+        console.error('Failed to fetch products:', data.error);
+      }
+    } catch (error) {
+      console.error('Error fetching products:', error);
     }
   };
 
-  const fetchCategories = async () => {
-    const res = await fetch('/api/categories');
-    const data = await res.json();
-    if (data.success) {
-      setCategories(data.data);
-    }
-  };
+
 
   useEffect(() => {
-    // fetchProducts();
-    fetchCategories();
+    fetchProducts();
   }, []);
 
   const handleDelete = async (productId) => {
-    const res = await fetch(`/api/products/${productId}`, {
-      method: 'DELETE',
-    });
-    if (res.ok) {
-      fetchProducts();
-    } else {
+    try {
+      const res = await fetch(`/api/products/${productId}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        fetchProducts();
+      } else {
+        console.error('Failed to delete product:', res.statusText);
+        alert('Failed to delete product');
+      }
+    } catch (error) {
+      console.error('Error deleting product:', error);
       alert('Failed to delete product');
     }
   };
@@ -49,7 +55,7 @@ const ManageProducts = () => {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedProduct(null);
-    fetchProducts();
+    fetchProducts(); // Refetch products after modal is closed
   };
 
   return (
@@ -58,9 +64,9 @@ const ManageProducts = () => {
       <h2>Products</h2>
       <ProductsTable products={products} onRowClick={handleRowClick} handleDelete={handleDelete} />
       {isModalOpen && selectedProduct && (
-        <UpdateProductModal 
-          product={selectedProduct} 
-          onClose={handleCloseModal} 
+        <UpdateProductModal
+          product={selectedProduct}
+          onClose={handleCloseModal}
           categories={categories}
         />
       )}
@@ -109,4 +115,4 @@ const ProductsTable = ({ products, onRowClick, handleDelete }) => {
   );
 };
 
-export default ManageProducts;
+export default AddProduct;

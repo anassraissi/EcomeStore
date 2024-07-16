@@ -1,27 +1,23 @@
 // pages/api/products/[id].js
-import nextConnect from 'next-connect';
+import formidable from 'formidable';
+import path from 'path';
 import dbConnect from '../../../../lib/mongodb';
 import Product from '../../../../models/Product';
+import fs from 'fs';
 
-const handler = nextConnect()
-  .use((req, res, next) => {
-    dbConnect();
-    next();
-  })
-  .get(async (req, res) => {
-    try {
-      const product = await Product.findById(req.query.id).populate('category');
-      if (!product) {
-        return res.status(404).json({ success: false, error: 'Product not found' });
-      }
-      res.status(200).json({ success: true, data: product });
-    } catch (error) {
-      res.status(500).json({ success: false, error: 'Failed to fetch product' });
-    }
-  })
-  .put(async (req, res) => {
+export const config = {
+  api: {
+    bodyParser: false, // Disable Next.js's default body parsing
+  },
+};
+
+export default async function handler(req, res) {
+  await dbConnect();
+
+  const { method, query: { id } } = req;
+
+  if (method === 'PUT') {
     const form = formidable({
-        uploadDir: path.join(process.cwd(), 'public', 'images', 'uploads', 'products'),
       keepExtensions: true,
     });
 
@@ -31,27 +27,47 @@ const handler = nextConnect()
         return res.status(500).json({ success: false, error: 'Form parsing error' });
       }
 
-      const {
-        name,
-        description,
-        price,
-        category,
-        sex,
-        stock,
-      } = fields;
+      // Extract fields from form data
+      const name = Array.isArray(fields.name) ? fields.name[0] : fields.name;
+      const sex = Array.isArray(fields.sex) ? fields.sex[0] : fields.sex;
+      const description = Array.isArray(fields.description) ? fields.description[0] : fields.description;
+      const price = Array.isArray(fields.price) ? fields.price[0] : fields.price;
+      const category = Array.isArray(fields.category) ? fields.category[0] : fields.category;
+      const stock = Array.isArray(fields.stock) ? fields.stock[0] : fields.stock;
+      const parentCatName = Array.isArray(fields.parentCatName) ? fields.parentCatName[0] : fields.parentCatName;
 
-      const imageUrls = files.images ? files.images.map(file => `/uploads/${file.newFilename}`) : [];
+      // Adjust the uploadDir path dynamically based on the product name
+      const uploadDir = path.join(process.cwd(), 'public', 'images', 'uploads', 'products', parentCatName, name);
+
+      // Create a directory for the product if it doesn't exist
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+        console.log(`Created directory: ${uploadDir}`);
+      }
+
+      const imageUrls = [];
+      for (const key in files) {
+        if (files.hasOwnProperty(key)) {
+          const fileArray = Array.isArray(files[key]) ? files[key] : [files[key]];
+
+          fileArray.forEach(file => {
+            const newFilePath = path.join(uploadDir, file.newFilename);
+            fs.renameSync(file.filepath, newFilePath); // Move file to the product directory
+            imageUrls.push(`/images/uploads/products/${parentCatName}/${name}/${file.newFilename}`);
+          });
+        }
+      }
 
       try {
         const updatedProduct = await Product.findByIdAndUpdate(
-          req.query.id,
+          id,
           {
             name,
             description,
             price,
             category,
             sex,
-            imageUrls,
+            ...(imageUrls.length > 0 && { imageUrls }),
             stock: parseInt(stock, 10),
           },
           { new: true }
@@ -64,20 +80,17 @@ const handler = nextConnect()
         res.status(200).json({ success: true, data: updatedProduct });
       } catch (error) {
         console.error('Database error:', error);
-        res.status(400).json({ success: false, error: 'Database error' });
+        res.status(400).json({ success: false, error: `Database error: ${error.message}` });
       }
     });
-  })
-  .delete(async (req, res) => {
+  } else if (method === 'DELETE') {
     try {
-      const deletedProduct = await Product.findByIdAndDelete(req.query.id);
-      if (!deletedProduct) {
-        return res.status(404).json({ success: false, error: 'Product not found' });
-      }
-      res.status(200).json({ success: true, data: deletedProduct });
+      await Product.findByIdAndDelete(id);
+      res.status(200).json({ success: true });
     } catch (error) {
-      res.status(500).json({ success: false, error: 'Failed to delete product' });
+      res.status(400).json({ success: false });
     }
-  });
-
-export default handler;
+  } else {
+    res.status(405).json({ success: false, error: 'Method not allowed' });
+  }
+}

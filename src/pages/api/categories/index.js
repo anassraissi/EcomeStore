@@ -31,7 +31,7 @@ export default async function handler(req, res) {
 
       let img_url = '';
       if (files.image && files.image[0].newFilename) {
-        img_url = `/uploads/${files.image[0].newFilename}`;
+        img_url = `images/uploads/categories/${files.image[0].newFilename}`;
       }
 
       console.log('Parsed fields:', { name, parent_id, img_url }); // Debugging log

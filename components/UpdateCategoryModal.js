@@ -30,7 +30,6 @@ const UpdateCategoryModal = ({ category, onClose }) => {
     formData.append('parent_id', parentCategoryId);
     if (image) {
       formData.append('image', image);
-      console.log(image);
     }
     
 
@@ -38,7 +37,6 @@ const UpdateCategoryModal = ({ category, onClose }) => {
       method: 'PUT',
       body: formData,
     });
-
     if (res.ok) {
       onClose();
       alert('Category updated successfully');
