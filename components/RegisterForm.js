@@ -1,25 +1,28 @@
-// components/RegisterForm.js
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import styles from './RegisterForm.module.css'; // Import the CSS module
 import { useRouter } from 'next/router';
+import 'mdb-react-ui-kit/dist/css/mdb.min.css'; // Import MDB React UI Kit CSS
+import { MDBInput } from 'mdb-react-ui-kit';
 
 const RegisterForm = ({ closeModal }) => {
   const router = useRouter();
 
-  const [role, setRole] = useState("")
-  useEffect(()=>{
-    if((localStorage.getItem('role')=='admin')){
-      setRole(localStorage.getItem('role'))
+  const [role, setRole] = useState("");
+
+  useEffect(() => {
+    if (localStorage.getItem('role') === 'admin') {
+      setRole(localStorage.getItem('role'));
     }
-  },[])
-  
+  }, []);
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'user' // Default role
+    role: 'user', // Default role
+    phone: '',
+    address: ''
   });
 
   const handleChange = (e) => {
@@ -32,12 +35,12 @@ const RegisterForm = ({ closeModal }) => {
     try {
       const response = await axios.post('/api/register', formData);
       console.log('Registration successful!', response.data);
-      toast.success('Register successful!');
+      // Optionally display a success message
       router.reload('/');
-      // Optionally redirect to login page or home page after successful registration
       closeModal(); // Close modal after successful registration
     } catch (error) {
       console.error('Registration failed!', error);
+      // Optionally display an error message
     }
   };
 
@@ -49,43 +52,112 @@ const RegisterForm = ({ closeModal }) => {
       </div>
       <div className="modal-body">
         <form onSubmit={handleSubmit}>
-          {/* Form fields */}
-          {/* Example: Name */}
+          {/* Name */}
           <div className="mb-3">
-            <label htmlFor="nameInput" className="form-label">Name</label>
-            <input type="text" className="form-control" id="nameInput" name="name" value={formData.name} onChange={handleChange} required />
+            <input
+              type="text"
+              className="form-control"
+              id="nameInput"
+              name="name"
+              placeholder="Name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+            />
           </div>
 
-          {/* Example: Email */}
+          {/* Email */}
           <div className="mb-3">
-            <label htmlFor="emailInput" className="form-label">Email address</label>
-            <input type="email" className="form-control" id="emailInput" name="email" value={formData.email} onChange={handleChange} required />
+            <input
+              type="email"
+              className="form-control"
+              id="emailInput"
+              name="email"
+              placeholder="Email address"
+              value={formData.email}
+              onChange={handleChange}
+              required
+            />
           </div>
 
-          {/* Example: Password */}
+          {/* Password */}
           <div className="mb-3">
-            <label htmlFor="passwordInput" className="form-label">Password</label>
-            <input type="password" className="form-control" id="passwordInput" name="password" value={formData.password} onChange={handleChange} required />
+            <input
+              type="password"
+              className="form-control"
+              id="passwordInput"
+              name="password"
+              placeholder="Password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+            />
           </div>
 
-          {/* Example: Confirm Password */}
+          {/* Confirm Password */}
           <div className="mb-3">
-            <label htmlFor="confirmPasswordInput" className="form-label">Confirm Password</label>
-            <input type="password" className="form-control" id="confirmPasswordInput" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} required />
+            <input
+              type="password"
+              className="form-control"
+              id="confirmPasswordInput"
+              name="confirmPassword"
+              placeholder="Confirm Password"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              required
+            />
           </div>
-        {role && 
-                  <div className="mb-3">
-                  <label htmlFor="roleSelect" className="form-label">Role</label>
-                  <select className="form-select" id="roleSelect" name="role" value={formData.role} onChange={handleChange} required>
-                    <option value="admin">Admin</option>
-                    <option value="operator">Operator</option>
-                  </select>
-                </div>
-        }
-          {/* Example: Role (select dropdown) */}
+
+          {/* Phone */}
+          <div data-mdb-input-init className="form mb-3" style={{ width: '100%', maxWidth: '22rem' }}>
+            <input
+              type="text"
+              id="phone"
+              className="form-control"
+              name="phone"
+              placeholder="Phone number with country code"
+              value={formData.phone}
+              onChange={handleChange}
+              data-mdb-input-mask="+48 999-999-999"
+              required
+            />
+          </div>
+
+          {/* Address */}
+          <div className="mb-3">
+            <input
+              type="text"
+              className="form-control"
+              id="addressInput"
+              name="address"
+              placeholder="Address"
+              value={formData.address}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          {/* Role (select dropdown) */}
+          {role && (
+            <div className="mb-3">
+              <select
+                className="form-select"
+                id="roleSelect"
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+                required
+              >
+                <option value="admin">Admin</option>
+                <option value="operator">Operator</option>
+              </select>
+            </div>
+          )}
 
           {/* Submit button */}
-          <button type="submit" className="btn btn-primary">Register</button>
+          <button type="submit" className="btn btn-primary">
+            Register
+          </button>
         </form>
       </div>
     </div>
