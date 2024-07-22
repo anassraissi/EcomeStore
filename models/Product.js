@@ -5,32 +5,24 @@ const ProductSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  description: {
-    type: String,
-  },
-  price: {
-    type: Number,
-    required: true,
-  },
-  category: {
+  categoryId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Category',
     required: true,
   },
-  sex: {
-    type: String,
-    enum: ['Men', 'Women', 'Both'],
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
     required: true,
   },
-  imageUrls: [
-    {
-      type: String,
-      required: true,
-    },
-  ],
-  stock: {
-    type: Number,
+  detailProduct: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'DetailProduct',
     required: true,
+  },
+  created_at: {
+    type: Date,
+    default: Date.now,
   },
 });
 

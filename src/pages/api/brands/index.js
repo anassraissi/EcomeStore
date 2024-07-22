@@ -1,14 +1,15 @@
-// pages/api/categories/index.js
+// pages/api/brands/index.js
 import formidable from 'formidable';
 import path from 'path';
 import fs from 'fs';
 import dbConnect from '../../../../lib/mongodb';
-import Category from '../../../../models/Category';
+import Brand from '../../../../models/Brand';
 import Image from '../../../../models/Image';
+import Category from '../../../../models/Category';
 
 export const config = {
   api: {
-    bodyParser: false, // Disable Next.js's default body parsing
+    bodyParser: false,
   },
 };
 
@@ -17,7 +18,7 @@ export default async function handler(req, res) {
 
   if (req.method === 'POST') {
     const form = formidable({
-      uploadDir: path.join(process.cwd(), 'public', 'images', 'uploads', 'categories'),
+      uploadDir: path.join(process.cwd(), 'public', 'images', 'uploads', 'brands'),
       keepExtensions: true,
     });
 
@@ -28,15 +29,14 @@ export default async function handler(req, res) {
       }
 
       const name = Array.isArray(fields.name) ? fields.name[0] : fields.name;
-      const parent_id = Array.isArray(fields.parent_id) ? fields.parent_id[0] : fields.parent_id;
+      const categoryId = Array.isArray(fields.CategoryId) ? fields.CategoryId[0] : fields.CategoryId;
 
       try {
-        const newCategory = new Category({
-          name,
-          parent_id: parent_id || null,
-        });
-
-        await newCategory.save();
+        // Ensure category exists
+        const category = await Category.findById(categoryId);
+        if (!category) {
+          return res.status(400).json({ success: false, error: 'Category not found' });
+        }
 
         const imageUrls = [];
         if (files.image) {
@@ -46,19 +46,25 @@ export default async function handler(req, res) {
             fs.renameSync(file.filepath, newFilePath);
             imageUrls.push(`${file.newFilename}`);
           }
-
           const newImage = new Image({
-            urls: imageUrls, // Save image URLs as an array
-            refId: newCategory._id,
-            type: 'category',
+            urls: imageUrls,
+            refId: category._id,
+            type: 'brand',
           });
           const savedImage = await newImage.save();
-          newCategory.images.push(savedImage._id);
+
+          const newBrand = new Brand({
+            name,
+            CategoryId: categoryId,
+            image: savedImage._id,
+          });
+
+          await newBrand.save();
+
+          res.status(201).json(newBrand);
+        } else {
+          res.status(400).json({ success: false, error: 'Image file is required' });
         }
-
-        await newCategory.save();
-
-        res.status(201).json(newCategory);
       } catch (error) {
         console.error('Database error:', error);
         res.status(400).json({ success: false, error: `Database error: ${error.message}` });
@@ -66,10 +72,10 @@ export default async function handler(req, res) {
     });
   } else if (req.method === 'GET') {
     try {
-      const categories = await Category.find({}).populate('parent_id').populate('images');
-      res.status(200).json({ success: true, data: categories });
+      const brands = await Brand.find({}).populate('CategoryId').populate('image');
+      res.status(200).json({ success: true, data: brands });
     } catch (error) {
-      res.status(500).json({ success: false, error: 'Failed to fetch categories' });
+      res.status(500).json({ success: false, error: 'Failed to fetch brands' });
     }
   } else {
     res.status(405).json({ success: false, error: 'Method not allowed' });

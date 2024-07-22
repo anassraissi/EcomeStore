@@ -90,6 +90,11 @@ const NavOperator = () => {
                   <a className="nav-link">Add Categories</a>
                 </Link>
               </li>
+              <li className="nav-item">
+                <Link href="/AddBrand" legacyBehavior> 
+                  <a className="nav-link">Add Brands</a>
+                </Link>
+              </li>
             </ul>
           </div>
         </div>

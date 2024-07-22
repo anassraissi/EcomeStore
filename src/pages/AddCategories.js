@@ -17,11 +17,10 @@ const AddCategories = () => {
       setCategories(data.data);
     }
   };
-
   useEffect(() => {
     fetchCategories();
   }, []);
-
+  
   const handleDelete = async (categoryId) => {
     const res = await fetch(`/api/categories/${categoryId}`, {
       method: 'DELETE',
@@ -78,19 +77,20 @@ const CategoriesTable = ({ categories, onRowClick, handleDelete }) => {
       </thead>
       <tbody>
         {categories.map(category => (
+          
           <tr key={category._id}>
             <td onClick={() => onRowClick(category)}>{category.name}</td>
             <td onClick={() => onRowClick(category)}>{category.parent_id ? category.parent_id.name : 'None'}</td>
             <td onClick={() => onRowClick(category)}>
-              {category.img_url ? (
-                <img src={category.img_url} alt={category.name} width="50" />
+              {category.images ? (
+                <img src ={`images/uploads/categories/${category.images[0].urls}`} alt={category.name} width="50" />
               ) : (
                 'No Image'
               )}
             </td>
             <td>
               <button onClick={(e) => { e.stopPropagation(); handleDelete(category._id); }} className="btn btn-danger">
-                Delete
+                Delete  
               </button>
             </td>
           </tr>
