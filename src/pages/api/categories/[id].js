@@ -31,6 +31,8 @@ export default async function handler(req, res) {
 
       const name = Array.isArray(fields.name) ? fields.name[0] : fields.name;
       const parentId = Array.isArray(fields.parent_id) ? fields.parent_id[0] : fields.parent_id;
+      const userId = Array.isArray(fields.userId) ? fields.userId[0] : fields.userId;
+
 
       try {
         // Find the existing category
@@ -67,6 +69,7 @@ export default async function handler(req, res) {
           const newImage = new Image({
             urls: imageUrls, // Save image URLs as an array
             refId: category._id,
+            userId:userId, // Save the userId in the image
             type: 'category',
           });
 
@@ -76,6 +79,8 @@ export default async function handler(req, res) {
 
         category.name = name;
         category.parent_id = parentId || null;
+        userId:userId, // Save the userId in the image
+
         await category.save();
 
         res.status(200).json(category);

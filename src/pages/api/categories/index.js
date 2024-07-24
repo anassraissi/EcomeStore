@@ -29,11 +29,15 @@ export default async function handler(req, res) {
 
       const name = Array.isArray(fields.name) ? fields.name[0] : fields.name;
       const parent_id = Array.isArray(fields.parent_id) ? fields.parent_id[0] : fields.parent_id;
+      const userId = Array.isArray(fields.userId) ? fields.userId[0] : fields.userId;
+
+      console.log('Parsed userId:', userId); // Log userId to verify
 
       try {
         const newCategory = new Category({
           name,
           parent_id: parent_id || null,
+          userId:userId, // Save the userId in the category
         });
 
         await newCategory.save();
@@ -48,8 +52,9 @@ export default async function handler(req, res) {
           }
 
           const newImage = new Image({
-            urls: imageUrls, // Save image URLs as an array
+            urls: imageUrls, // Save image filenames as an array
             refId: newCategory._id,
+            userId:userId, // Save the userId in the image
             type: 'category',
           });
           const savedImage = await newImage.save();

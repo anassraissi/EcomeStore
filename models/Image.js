@@ -14,6 +14,11 @@ const imageSchema = new mongoose.Schema({
     enum: ['product', 'category' , 'brand'],
     required: true,
   },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
   created_at: {
     type: Date,
     default: Date.now,

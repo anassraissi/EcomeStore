@@ -8,15 +8,13 @@ import NavOperator from './NavOperator';
 const Layout = ({ children }) => {
   const [role, setRole] = useState("")
   useEffect(()=>{
-    if((localStorage.getItem('role')=='operator')){
+ 
       setRole(localStorage.getItem('role'))
-      console.log(role);
-    }
   },[])
   return (
     <div className={styles.wrapper}>
       <div className={styles.container}>
-        {role=='operator' ?   <NavOperator/> : <Navbar/>}
+        {role==('operator') || ('seller') ?   <NavOperator/> : <Navbar/>}
         <main className={styles.main}>
           {children}
         </main>

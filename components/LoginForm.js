@@ -16,11 +16,8 @@ const LoginForm = () => {
 
     try {
       const { user, token } = await login(email, password);
-      localStorage.setItem('token', token); // Store token in localStorage
-      localStorage.setItem('username', user.name); // Store username in localStorage
-      localStorage.setItem('role', user.role); // Store role in localStorage
-      router.reload('/');
       toast.success('Login successful!');
+      router.reload('/');
     } catch (error) {
       console.error('Login error:', error);
       toast.error('Login failed. Please check your credentials.');

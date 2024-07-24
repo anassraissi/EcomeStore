@@ -30,6 +30,7 @@ export default async function handler(req, res) {
 
       const name = Array.isArray(fields.name) ? fields.name[0] : fields.name;
       const categoryId = Array.isArray(fields.CategoryId) ? fields.CategoryId[0] : fields.CategoryId;
+      const userId = Array.isArray(fields.userId) ? fields.userId[0] : fields.userId;
 
       try {
         // Ensure category exists
@@ -49,6 +50,7 @@ export default async function handler(req, res) {
           const newImage = new Image({
             urls: imageUrls,
             refId: category._id,
+            userId:userId,
             type: 'brand',
           });
           const savedImage = await newImage.save();
@@ -57,6 +59,7 @@ export default async function handler(req, res) {
             name,
             CategoryId: categoryId,
             image: savedImage._id,
+            userId:userId
           });
 
           await newBrand.save();

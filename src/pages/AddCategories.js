@@ -83,7 +83,7 @@ const CategoriesTable = ({ categories, onRowClick, handleDelete }) => {
             <td onClick={() => onRowClick(category)}>{category.parent_id ? category.parent_id.name : 'None'}</td>
             <td onClick={() => onRowClick(category)}>
               {category.images ? (
-                <img src ={`images/uploads/categories/${category.images[0].urls}`} alt={category.name} width="50" />
+                <img src ={`images/uploads/categories/${category.images[0]?.urls}`} alt={category.name} width="50" />
               ) : (
                 'No Image'
               )}

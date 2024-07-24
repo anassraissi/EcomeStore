@@ -3,6 +3,8 @@ import { Form, Button } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 
 const BrandForm = ({ fetchBrands }) => {
+  const [userId, setUserId] = useState("");
+
   const [formData, setFormData] = useState({
     name: '',
     category: '',
@@ -25,6 +27,8 @@ const BrandForm = ({ fetchBrands }) => {
         toast.error('Failed to fetch categories');
       }
     };
+    setUserId(localStorage.getItem('userId'));
+
 
     fetchCategories();
   }, []);
@@ -50,9 +54,11 @@ const BrandForm = ({ fetchBrands }) => {
     const formDataObj = new FormData();
     formDataObj.append('name', formData.name);
     formDataObj.append('CategoryId', formData.category);
+    formDataObj.append('userId',userId);
     if (formData.image) {
       formDataObj.append('image', formData.image);
     }
+    userId
 
     try {
       const res = await fetch('/api/brands', {
