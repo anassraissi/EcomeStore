@@ -1,40 +1,55 @@
-// context/AuthContext.js
-
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  let logoutTimer;
 
   const login = async (email, password) => {
     try {
       const response = await axios.post('/api/login', { email, password });
-      // console.log("response: ",response);
       const { token, user } = response.data;
-      localStorage.setItem('token', token); // Store token in localStorage
-      localStorage.setItem('username', user.name); // Store username in localStorage
-      localStorage.setItem('role', user.role); // Store role in localStorage
-      localStorage.setItem('userId', user._id); // Store role in localStorage
+      localStorage.setItem('token', token);
+      localStorage.setItem('username', user.name);
+      localStorage.setItem('role', user.role);
+      localStorage.setItem('userId', user._id);
       setUser(user);
-      return {user,token}
+      startLogoutTimer(); // Start the logout timer after login
+      return { user, token };
     } catch (error) {
       console.error('Login error:', error);
       throw new Error('Login failed');
-    }s
-  };
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('token'); // Remove token from localStorage
-    localStorage.removeItem('user'); // Remove token from localStorage
-    localStorage.removeItem('username'); // Remove token from localStorage
-    localStorage.removeItem('role'); // Remove token from localStorage
-    
+    }
   };
 
+  const logout = () => {
+    setUser(null);
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    localStorage.removeItem('role');
+    localStorage.removeItem('userId');
+    clearTimeout(logoutTimer); // Clear the timer on logout
+  };
+
+  const startLogoutTimer = () => {
+    clearTimeout(logoutTimer); // Clear any existing timer
+    logoutTimer = setTimeout(() => {
+      logout();
+      alert('You have been logged out due to inactivity.');
+    }, 15 * 60 * 1000); // 15 minutes
+  };
+
+  useEffect(() => {
+    if (user) {
+      startLogoutTimer(); // Start the timer when the user is set
+    }
+    return () => clearTimeout(logoutTimer); // Clear the timer on component unmount
+  }, [user]);
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, setUser}}>
+    <AuthContext.Provider value={{ user, login, logout, setUser }}>
       {children}
     </AuthContext.Provider>
   );

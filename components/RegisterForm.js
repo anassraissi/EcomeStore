@@ -10,7 +10,7 @@ const RegisterForm = ({ closeModal }) => {
   const [role, setRole] = useState("");
 
   useEffect(() => {
-    if (localStorage.getItem('role') === 'admin') {
+    if (localStorage.getItem('role') == 'admin') {
       setRole(localStorage.getItem('role'));
     }
   }, []);
@@ -138,7 +138,6 @@ const RegisterForm = ({ closeModal }) => {
           </div>
 
           {/* Role (select dropdown) */}
-          {role && (
             <div className="mb-3">
               <select
                 className="form-select"
@@ -148,11 +147,20 @@ const RegisterForm = ({ closeModal }) => {
                 onChange={handleChange}
                 required
               >
-                <option value="admin">Admin</option>
-                <option value="operator">Operator</option>
+          {role && (
+             <>
+                             <option value="admin">Admin</option>
+                             <option value="operator">Operator</option>
+             </>
+              ) 
+          }
+                <option value="user">user</option>
+                <option value="seller">seller</option>
+
+
               </select>
             </div>
-          )}
+          
 
           {/* Submit button */}
           <button type="submit" className="btn btn-primary">

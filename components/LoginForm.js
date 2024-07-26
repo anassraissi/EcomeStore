@@ -25,7 +25,7 @@ const LoginForm = () => {
   };
 
   return (
-    <form onSubmit={handleLogin}>
+    <form onSubmit={handleLogin} autoComplete='true'>
       <div className="form-outline mb-4">
         <input
           type="email"
