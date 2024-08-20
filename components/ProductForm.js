@@ -1,110 +1,147 @@
 import React, { useEffect, useState } from 'react';
-import { Form, Button } from 'react-bootstrap';
+import { Button, Box, InputLabel, MenuItem, FormControl, Select, TextField, Grid, IconButton, Container, CircularProgress } from '@mui/material';
 import { toast } from 'react-toastify';
+import { Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
 
 const ProductForm = ({ fetchProducts }) => {
+  const [userId, setUserId] = useState("");
   const [formData, setFormData] = useState({
     name: '',
-    description: '',
-    realPrice: '',
-    ttcPrice: '',
-    sex: '',
-    stock: '',
-    imageFiles: [],
+    category: '',
+    brand: '',
+    colors: [{ color: '', images: [], imagePreviews: [], stock: 0 }],
     tags: '',
-    size: '',
-    color: '',
-    categoryId: '',
-    brandId: '',
+    description: '',
+    features: '',
+    specifications: '',
+    price: '',
+    weight: '',
+    dimensions: { length: '', width: '', height: '' },
+    shippingOptions: [{ name: '', cost: '', estimatedDeliveryTime: '' }],
   });
-
   const [categories, setCategories] = useState([]);
-  const [allBrands, setAllBrands] = useState([]);
-  const [filteredBrands, setFilteredBrands] = useState([]);
+  const [brands, setBrands] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  // Fetch categories and brands on component mount
   useEffect(() => {
-    const fetchCategories = async () => {
+    setUserId(localStorage.getItem('userId'));
+    const fetchData = async () => {
       try {
-        const res = await fetch('/api/categories');
-        const data = await res.json();
-        if (data.success) {
-          const filteredCategories = data.data.filter(category => category.parent_id !== null);
+        const [categoriesRes, brandsRes] = await Promise.all([
+          fetch('/api/categories'),
+          fetch('/api/brands'),
+        ]);
+        const [categoriesData, brandsData] = await Promise.all([
+          categoriesRes.json(),
+          brandsRes.json(),
+        ]);
+
+        if (categoriesData.success)  {
+          const filteredCategories = categoriesData.data.filter(category => category.parent_id !== null);
           setCategories(filteredCategories);
-        } else {
-          toast.error('Failed to fetch categories');
         }
+        if (brandsData.success) setBrands(brandsData.data);
       } catch (error) {
-        toast.error('Failed to fetch categories');
+        toast.error('Failed to fetch data');
       }
     };
-
-    const fetchAllBrands = async () => {
-      try {
-        const res = await fetch('/api/brands');
-        const data = await res.json();
-        if (data.success) {
-          setAllBrands(data.data);
-        } else {
-          toast.error('Failed to fetch brands');
-        }
-      } catch (error) {
-        toast.error('Failed to fetch brands');
-      }
-    };
-
-    fetchCategories();
-    fetchAllBrands();
+    fetchData();
   }, []);
 
-  // Filter brands based on selected category
-  useEffect(() => {
-    setFilteredBrands("")
-    if (formData.categoryId) {
-      console.log(formData.categoryId);
-      const brandsForCategory = allBrands.filter(brand => brand.CategoryId._id===formData.categoryId);
-      setFilteredBrands(brandsForCategory);
-    } else {
-      setFilteredBrands([]);
-    }
-  }, [formData.categoryId, allBrands]);
-
-  // Handle input change for text fields
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+    setFormData((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
   };
 
-  // Handle image file selection
-  const handleImageChange = (e) => {
+  const handleColorChange = (index, e) => {
+    const { name, value } = e.target;
+    const newColors = [...formData.colors];
+    newColors[index][name] = value;
+    setFormData({ ...formData, colors: newColors });
+  };
+
+  const handleImageChange = (index, e) => {
     const files = Array.from(e.target.files);
+    const newColors = [...formData.colors];
+    newColors[index].images = files;
+
+    // Generate image previews
+    const imagePreviews = files.map((file) => URL.createObjectURL(file));
+    newColors[index].imagePreviews = imagePreviews;
+
+    setFormData({ ...formData, colors: newColors });
+  };
+
+  const addColor = () => {
     setFormData({
       ...formData,
-      imageFiles: files,
+      colors: [...formData.colors, { color: '', images: [], imagePreviews: [], stock: 0 }]
     });
   };
 
-  // Handle form submission
+  const removeColor = (index) => {
+    const newColors = formData.colors.filter((_, i) => i !== index);
+    setFormData({ ...formData, colors: newColors });
+  };
+
+  const handleShippingOptionChange = (index, e) => {
+    const { name, value } = e.target;
+    const updatedShippingOptions = formData.shippingOptions.map((option, i) =>
+      i === index ? { ...option, [name]: value } : option
+    );
+    setFormData({ ...formData, shippingOptions: updatedShippingOptions });
+  };
+
+  const addShippingOption = () => {
+    setFormData((prevState) => ({
+      ...prevState,
+      shippingOptions: [...prevState.shippingOptions, { name: '', cost: '', estimatedDeliveryTime: '' }],
+    }));
+  };
+
+  const removeShippingOption = (index) => {
+    const updatedShippingOptions = formData.shippingOptions.filter((_, i) => i !== index);
+    setFormData({ ...formData, shippingOptions: updatedShippingOptions });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    setLoading(true);
+
+    if (formData.shippingOptions.length === 0 || (formData.shippingOptions.length === 1 && !formData.shippingOptions[0].name && !formData.shippingOptions[0].cost && !formData.shippingOptions[0].estimatedDeliveryTime)) {
+      formData.shippingOptions = [
+        {
+          name: 'Standard Shipping',
+          cost: 5.99,
+          estimatedDeliveryTime: '5-7 business days',
+        },
+      ];
+    }
+
     const formDataForUpload = new FormData();
     formDataForUpload.append('name', formData.name);
+    formDataForUpload.append('category', formData.category);
+    formDataForUpload.append('brand', formData.brand);
+    formDataForUpload.append('userId', userId);
+    formDataForUpload.append('tags', formData.tags); 
     formDataForUpload.append('description', formData.description);
-    formDataForUpload.append('realPrice', formData.realPrice);
-    formDataForUpload.append('ttcPrice', formData.ttcPrice);
-    formDataForUpload.append('sex', formData.sex);
-    formDataForUpload.append('brandId', formData.brandId);
-    formDataForUpload.append('tags', formData.tags);
-    formDataForUpload.append('size', formData.size);
-    formDataForUpload.append('color', formData.color);
-    formDataForUpload.append('stock', parseInt(formData.stock, 10));
-    formDataForUpload.append('categoryId', formData.categoryId);
+    formDataForUpload.append('features', formData.features); 
+    formDataForUpload.append('specifications', formData.specifications);
+    formDataForUpload.append('price', formData.price);
+    formDataForUpload.append('weight', formData.weight);
+    formDataForUpload.append('dimensions', JSON.stringify(formData.dimensions));
+    formDataForUpload.append('shippingOptions', JSON.stringify(formData.shippingOptions));
 
-    formData.imageFiles.forEach((file, index) => {
-      formDataForUpload.append(`imageFile-${index}`, file);
+    formData.colors.forEach((colorData, index) => {
+      formDataForUpload.append(`colors[${index}][color]`, colorData.color);
+      formDataForUpload.append(`colors[${index}][stock]`, colorData.stock);
+      colorData.images.forEach((file, fileIndex) => {
+        formDataForUpload.append(`colors[${index}][images][${fileIndex}]`, file);
+      });
     });
 
     try {
@@ -114,166 +151,324 @@ const ProductForm = ({ fetchProducts }) => {
       });
 
       if (res.ok) {
-        console.log('Product created successfully');
+        toast.success('Product created successfully');
         fetchProducts();
+        setFormData({
+          name: '',
+          category: '',
+          brand: '',
+          colors: [{ color: '', images: [], imagePreviews: [], stock: 0 }],
+          tags: '',
+          description: '',
+          features: '',
+          specifications: '',
+          price: '',
+          weight: '',
+          dimensions: { length: '', width: '', height: '' },
+          shippingOptions: [{ name: '', cost: '', estimatedDeliveryTime: '' }],
+        });
       } else {
-        console.error('Failed to create product');
+        toast.error('Failed to create product');
       }
     } catch (error) {
-      console.error('Error creating product:', error);
+      toast.error('Error creating product');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <Form onSubmit={handleSubmit}>
-      <Form.Group>
-        <Form.Label>Name</Form.Label>
-        <Form.Control
-          type="text"
+    <Container maxWidth="md">
+      <form onSubmit={handleSubmit}>
+        <TextField
+          label="Name"
           name="name"
           value={formData.name}
           onChange={handleChange}
           placeholder="Enter product name"
+          fullWidth
           required
+          margin="normal"
         />
-      </Form.Group>
-      <Form.Group>
-        <Form.Label>Description</Form.Label>
-        <Form.Control
-          type="text"
+        <Box sx={{ minWidth: 120, marginTop: 2 }}>
+          <FormControl fullWidth>
+            <InputLabel id="category-select-label">Category</InputLabel>
+            <Select
+              labelId="category-select-label"
+              id="category-select"
+              name="category"
+              value={formData.category}
+              label="Category"
+              onChange={handleChange}
+              required
+            >
+              <MenuItem value="">Select Category</MenuItem>
+              {categories.map((category) => (
+                <MenuItem key={category._id} value={category._id}>
+                  {category.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
+        <Box sx={{ minWidth: 120, marginTop: 2 }}>
+          <FormControl fullWidth>
+            <InputLabel id="brand-select-label">Brand</InputLabel>
+            <Select
+              labelId="brand-select-label"
+              id="brand-select"
+              name="brand"
+              value={formData.brand}
+              label="Brand"
+              onChange={handleChange}
+              required
+            >
+              <MenuItem value="">Select Brand</MenuItem>
+              {brands.map((brand) => (
+                <MenuItem key={brand._id} value={brand._id}>
+                  {brand.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
+        <TextField
+          label="Description"
           name="description"
           value={formData.description}
           onChange={handleChange}
           placeholder="Enter product description"
-        />
-      </Form.Group>
-      <Form.Group>
-        <Form.Label>Real Price</Form.Label>
-        <Form.Control
-          type="number"
-          name="realPrice"
-          value={formData.realPrice}
-          onChange={handleChange}
-          placeholder="Enter real price"
+          fullWidth
           required
+          margin="normal"
         />
-      </Form.Group>
-      <Form.Group>
-        <Form.Label>TTC Price</Form.Label>
-        <Form.Control
-          type="number"
-          name="ttcPrice"
-          value={formData.ttcPrice}
-          onChange={handleChange}
-          placeholder="Enter TTC price"
-          required
-        />
-      </Form.Group>
-      <Form.Group>
-        <Form.Label>Category</Form.Label>
-        <Form.Control
-          as="select"
-          name="categoryId"
-          value={formData.categoryId}
-          onChange={handleChange}
-          required
+
+        {formData.colors.map((colorData, index) => (
+          <Grid container spacing={2} key={index} alignItems="center" sx={{ marginTop: 2 }}>
+            <Grid item xs={3}>
+              <TextField
+                label="Color"
+                name="color"
+                value={colorData.color}
+                onChange={(e) => handleColorChange(index, e)}
+                placeholder="Enter color"
+                fullWidth
+                required
+              />
+            </Grid>
+            <Grid item xs={3}>
+              <TextField
+                label="Stock"
+                name="stock"
+                type="number"
+                value={colorData.stock}
+                onChange={(e) => handleColorChange(index, e)}
+                placeholder="Enter stock"
+                fullWidth
+                required
+              />
+            </Grid>
+            <Grid item xs={3}>
+              <Button
+                variant="outlined"
+                color="error"
+                startIcon={<DeleteIcon />}
+                onClick={() => removeColor(index)}
+              >
+                Remove Color
+              </Button>
+            </Grid>
+            <Grid item xs={3}>
+              <input
+                type="file"
+                multiple
+                onChange={(e) => handleImageChange(index, e)}
+                style={{ display: 'none' }}
+                id={`color-images-${index}`}
+              />
+              <label htmlFor={`color-images-${index}`}>
+                <Button variant="outlined" component="span" startIcon={<AddIcon />}>
+                  Add Images
+                </Button>
+              </label>
+              <Box sx={{ display: 'flex', gap: 1, marginTop: 1 }}>
+                {colorData.imagePreviews.map((preview, i) => (
+                  <img
+                    key={i}
+                    src={preview}
+                    alt={`Color ${index} Preview ${i}`}
+                    style={{ width: 100, height: 100, objectFit: 'cover' }}
+                  />
+                ))}
+              </Box>
+            </Grid>
+          </Grid>
+        ))}
+
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={addColor}
+          startIcon={<AddIcon />}
+          sx={{ marginTop: 2 }}
         >
-          <option>Select Category</option>
-          {categories.map(category => (
-            <option key={category._id} value={category._id}>{category.name}</option>
-          ))}
-        </Form.Control>
-      </Form.Group>
-      <Form.Group>
-        <Form.Label>Brand</Form.Label>
-        <Form.Control
-          as="select"
-          name="brandId"
-          value={formData.brandId}
-          onChange={handleChange}
-          required
-        >
-          <option value="">Select Brand</option>
-          {filteredBrands.map(brand => (
-            <option key={brand.id} value={brand.id}>{brand.name}</option>
-          ))}
-        </Form.Control>
-      </Form.Group>
-      <Form.Group>
-        <Form.Label>Sex</Form.Label>
-        <Form.Control
-          as="select"
-          name="sex"
-          value={formData.sex}
-          onChange={handleChange}
-          required
-        >
-          <option value="">Select Sex</option>
-          <option value="men">Men</option>
-          <option value="women">Women</option>
-          <option value="both">Both</option>
-        </Form.Control>
-      </Form.Group>
-      <Form.Group>
-        <Form.Label>Stock</Form.Label>
-        <Form.Control
-          type="number"
-          name="stock"
-          value={formData.stock}
-          onChange={handleChange}
-          placeholder="Enter product stock"
-          required
-        />
-      </Form.Group>
-      <Form.Group>
-        <Form.Label>Tags</Form.Label>
-        <Form.Control
-          as="textarea"
+          Add Color
+        </Button>
+
+        <TextField
+          label="Tags"
           name="tags"
           value={formData.tags}
           onChange={handleChange}
-          placeholder="Enter product tags"
-          required
+          placeholder="Enter tags (comma separated)"
+          fullWidth
+          margin="normal"
         />
-      </Form.Group>
-      <Form.Group>
-        <Form.Label>Size</Form.Label>
-        <Form.Control
-          type="text"
-          name="size"
-          value={formData.size}
+
+        <TextField
+          label="Features"
+          name="features"
+          value={formData.features}
           onChange={handleChange}
-          placeholder="Enter product size"
-          required
+          placeholder="Enter product features"
+          fullWidth
+          margin="normal"
         />
-      </Form.Group>
-      <Form.Group>
-        <Form.Label>Color</Form.Label>
-        <Form.Control
-          type="text"
-          name="color"
-          value={formData.color}
+
+        <TextField
+          label="Specifications"
+          name="specifications"
+          value={formData.specifications}
           onChange={handleChange}
-          placeholder="Enter product color"
+          placeholder="Enter product specifications"
+          fullWidth
+          margin="normal"
+        />
+
+        <TextField
+          label="Price"
+          name="price"
+          type="number"
+          value={formData.price}
+          onChange={handleChange}
+          placeholder="Enter price"
+          fullWidth
           required
+          margin="normal"
         />
-      </Form.Group>
-      <Form.Group>
-        <Form.Label>Upload Images</Form.Label>
-        <Form.Control
-          type="file"
-          id="custom-file"
-          label="Choose file"
-          custom
-          data-mdb-multiple
-          onChange={handleImageChange}
-          multiple
+
+        <TextField
+          label="Weight"
+          name="weight"
+          value={formData.weight}
+          onChange={handleChange}
+          placeholder="Enter weight"
+          fullWidth
+          margin="normal"
         />
-      </Form.Group>
-      <Button variant="primary" type="submit">
-        Submit
-      </Button>
-    </Form>
+
+        <Grid container spacing={2} sx={{ marginTop: 2 }}>
+          <Grid item xs={4}>
+            <TextField
+              label="Length"
+              name="length"
+              value={formData.dimensions.length}
+              onChange={(e) => handleChange({ target: { name: 'dimensions', value: { ...formData.dimensions, length: e.target.value } } })}
+              placeholder="Length"
+              fullWidth
+              margin="normal"
+            />
+          </Grid>
+          <Grid item xs={4}>
+            <TextField
+              label="Width"
+              name="width"
+              value={formData.dimensions.width}
+              onChange={(e) => handleChange({ target: { name: 'dimensions', value: { ...formData.dimensions, width: e.target.value } } })}
+              placeholder="Width"
+              fullWidth
+              margin="normal"
+            />
+          </Grid>
+          <Grid item xs={4}>
+            <TextField
+              label="Height"
+              name="height"
+              value={formData.dimensions.height}
+              onChange={(e) => handleChange({ target: { name: 'dimensions', value: { ...formData.dimensions, height: e.target.value } } })}
+              placeholder="Height"
+              fullWidth
+              margin="normal"
+            />
+          </Grid>
+        </Grid>
+
+        {formData.shippingOptions.map((option, index) => (
+          <Grid container spacing={2} key={index} sx={{ marginTop: 2 }}>
+            <Grid item xs={4}>
+              <TextField
+                label="Shipping Option Name"
+                name="name"
+                value={option.name}
+                onChange={(e) => handleShippingOptionChange(index, e)}
+                placeholder="Shipping option name"
+                fullWidth
+                required
+              />
+            </Grid>
+            <Grid item xs={4}>
+              <TextField
+                label="Cost"
+                name="cost"
+                type="number"
+                value={option.cost}
+                onChange={(e) => handleShippingOptionChange(index, e)}
+                placeholder="Cost"
+                fullWidth
+                required
+              />
+            </Grid>
+            <Grid item xs={4}>
+              <TextField
+                label="Estimated Delivery Time"
+                name="estimatedDeliveryTime"
+                value={option.estimatedDeliveryTime}
+                onChange={(e) => handleShippingOptionChange(index, e)}
+                placeholder="Estimated delivery time"
+                fullWidth
+                required
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <Button
+                variant="outlined"
+                color="error"
+                startIcon={<DeleteIcon />}
+                onClick={() => removeShippingOption(index)}
+              >
+                Remove Shipping Option
+              </Button>
+            </Grid>
+          </Grid>
+        ))}
+
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={addShippingOption}
+          startIcon={<AddIcon />}
+          sx={{ marginTop: 2 }}
+        >
+          Add Shipping Option
+        </Button>
+
+        <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 4 }}>
+          <Button type="submit" variant="contained" color="primary" disabled={loading}>
+            {loading ? <CircularProgress size={24} /> : 'Submit'}
+          </Button>
+        </Box>
+      </form>
+    </Container>
   );
 };
 

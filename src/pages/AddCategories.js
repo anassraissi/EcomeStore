@@ -65,6 +65,8 @@ const AddCategories = () => {
 };
 
 const CategoriesTable = ({ categories, onRowClick, handleDelete }) => {
+  console.log(categories);
+  
   return (
     <Table className="table table-success table-striped">
       <thead>

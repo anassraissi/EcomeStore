@@ -1,112 +1,120 @@
 import React, { useState, useEffect } from 'react';
-import { Table } from 'react-bootstrap';
-import UpdateProductModal from '../../components/UpdateProductModal';
-import ProductForm from '../../components/ProductForm';
-
-const AddProduct = () => {
+import { Table, Button } from '@mui/material';
+import { toast } from 'react-toastify';
+import ProductFormModal from '../../components/ProductFormModal';
+const AddProducts = () => {
   const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showFormModal, setShowFormModal] = useState(false);
 
   const fetchProducts = async () => {
-    try {
-      const res = await fetch('/api/products');
-      const data = await res.json();
-      if (data.success) {
-        setProducts(data.data);
-        console.log(products); // Assuming data is structured with 'data' field containing products array
-      } else {
-        console.error('Failed to fetch products:', data.error);
-      }
-    } catch (error) {
-      console.error('Error fetching products:', error);
+    const res = await fetch('/api/products');
+    const data = await res.json();
+    if (data.success) {
+      setProducts(data.data);
     }
   };
-
-
 
   useEffect(() => {
     fetchProducts();
   }, []);
 
-  const handleDelete = async (productId) => {
-    try {
-      const res = await fetch(`/api/products/${productId}`, {
-        method: 'DELETE',
-      });
-      if (res.ok) {
-        fetchProducts();
-      } else {
-        console.error('Failed to delete product:', res.statusText);
-        alert('Failed to delete product');
-      }
-    } catch (error) {
-      console.error('Error deleting product:', error);
-      alert('Failed to delete product');
-    }
-  };
-
   const handleRowClick = (product) => {
     setSelectedProduct(product);
-    setIsModalOpen(true);
+    setShowFormModal(true);
   };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedProduct(null);
-    fetchProducts(); // Refetch products after modal is closed
+  const handleDelete = async (productId) => {
+    const res = await fetch(`/api/products/${productId}`, {
+      method: 'DELETE',
+    });
+    if (res.ok) {
+      fetchProducts(); // Re-fetch products after deletion
+      toast.success('Product deleted successfully');
+    } else {
+      toast.error('Failed to delete product');
+    }
   };
 
   return (
     <div>
-      <ProductForm fetchProducts={fetchProducts} categories={categories} />
+      <div className="d-flex justify-content-end mb-3">
+        <Button 
+          variant="contained" 
+          color="primary" 
+          onClick={() => setShowFormModal(true)}
+        >
+          Add Product
+        </Button>
+      </div>
       <h2>Products</h2>
-      <ProductsTable products={products} onRowClick={handleRowClick} handleDelete={handleDelete} />
-      {isModalOpen && selectedProduct && (
-        <UpdateProductModal
-          product={selectedProduct}
-          onClose={handleCloseModal}
-          categories={categories}
-        />
-      )}
+      <ProductsTable 
+        products={products} 
+        handleRowClick={handleRowClick} 
+        handleDelete={handleDelete} 
+      />
+      <ProductFormModal 
+        open={showFormModal} 
+        handleClose={() => setShowFormModal(false)} 
+        fetchProducts={fetchProducts} 
+        productToEdit={selectedProduct} 
+      />
     </div>
   );
 };
 
-const ProductsTable = ({ products, onRowClick, handleDelete }) => {
+const ProductsTable = ({ products, handleRowClick, handleDelete }) => {
   return (
     <Table className="table table-success table-striped">
       <thead>
         <tr>
           <th>Name</th>
-          <th>Description</th>
-          <th>Price</th>
           <th>Category</th>
-          <th>Sex</th>
-          <th>Images</th>
-          <th>Stock</th>
+          <th>Image</th>
+          <th>Price</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody>
         {products.map(product => (
-          <tr key={product._id}>
-            <td onClick={() => onRowClick(product)}>{product.name}</td>
-            <td onClick={() => onRowClick(product)}>{product.description}</td>
-            <td onClick={() => onRowClick(product)}>{product.price}</td>
-            <td onClick={() => onRowClick(product)}>{product.category.name}</td>
-            <td onClick={() => onRowClick(product)}>{product.sex}</td>
-            <td onClick={() => onRowClick(product)}>
-              {product.imageUrls.map((url, index) => (
-                <img key={index} src={url} alt={product.name} width="50" />
-              ))}
-            </td>
-            <td onClick={() => onRowClick(product)}>{product.stock}</td>
+          <tr key={product._id} onClick={() => handleRowClick(product)} style={{ cursor: 'pointer' }}>
+            <td>{product.name}</td>
+            <td>{product.category?.name || 'None'}</td>
             <td>
-              <button onClick={(e) => { e.stopPropagation(); handleDelete(product._id); }} className="btn btn-danger">
+              {product.colors && product.colors.length > 0 ? (
+                product.colors.map(color => (
+                  <div key={color.color} style={{ marginBottom: '10px' }}>
+                    <strong>{color.color}</strong>
+                    <div>
+                      {color.images && color.images.length > 0 ? (
+                        color.images.map(imageId => (
+                          <img 
+                            key={imageId} 
+                            src={`images/uploads/products/${imageId.urls[0]}`} 
+                            alt={`${product.name} - ${color.color}`} 
+                            width="50" 
+                            style={{ marginRight: '5px' }}
+                          />
+                        ))
+                      ) : (
+                        <span>No Image</span>
+                      )}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <span>No Image</span>
+              )}
+            </td>
+            <td>${product.details.price}</td>
+            <td>
+              <Button 
+                onClick={() => handleDelete(product._id)} 
+                variant="contained" 
+                color="error"
+              >
                 Delete
-              </button>
+              </Button>
             </td>
           </tr>
         ))}
@@ -115,4 +123,4 @@ const ProductsTable = ({ products, onRowClick, handleDelete }) => {
   );
 };
 
-export default AddProduct;
+export default AddProducts;

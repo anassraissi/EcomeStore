@@ -6,8 +6,11 @@ const UpdateCategoryModal = ({ category, onClose }) => {
   const [parentCategoryId, setParentCategoryId] = useState(category.parent_id ? category.parent_id._id : '');
   const [image, setImage] = useState(null);
   const [categories, setCategories] = useState([]);
+  const [userId, setUserId] = useState("");
+
 
   useEffect(() => {
+    setUserId(localStorage.getItem('userId'));
     const fetchCategoriesData = async () => {
       const res = await fetch('/api/categories');
       const data = await res.json();
@@ -28,9 +31,11 @@ const UpdateCategoryModal = ({ category, onClose }) => {
     const formData = new FormData();
     formData.append('name', name);
     formData.append('parent_id', parentCategoryId);
+    formData.append('userId', userId);
     if (image) {
       formData.append('image', image);
     }
+    
     
 
     const res = await fetch(`/api/categories/${category._id}`, {

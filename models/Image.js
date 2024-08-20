@@ -2,29 +2,24 @@ import mongoose from 'mongoose';
 
 const imageSchema = new mongoose.Schema({
   urls: {
-    type: [String], // Array of image URLs
+    type: [String],
     required: true,
   },
   refId: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
-  },
-  type: {
-    type: String,
-    enum: ['product', 'category' , 'brand'],
-    required: true,
+    ref: 'Product' // or 'Category' depending on your use case
   },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true,
   },
-  created_at: {
-    type: Date,
-    default: Date.now,
+  type: {
+    type: String,
+    enum: ['product', 'category','brand'],
+    required: true,
   },
 });
 
-const Image = mongoose.models.Image || mongoose.model('Image', imageSchema);
-export default Image;
-  
+export default mongoose.models.Image || mongoose.model('Image', imageSchema);

@@ -1,63 +1,46 @@
-// models/ProductDetails.js
 import mongoose from 'mongoose';
 
-const ProductDetailsSchema = new mongoose.Schema({
-  sex: {
-    type: String,
-    enum: ['men', 'women', 'both'],
-    required: true,
-  },
-  realPrice: {
-    type: Number,
-    required: true,
-  },
-  ttcPrice: {
-    type: Number,
-    required: true,
-  },
-  CategoryId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Category',
-    required: true,
-  },
-  brandId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Brand',
-    required: true,
-  },
-  stockId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Stock',
-    required: true,
-  },
-  imageId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Image',
-    required: true,
-  },
+const detailProductSchema = new mongoose.Schema({
   description: {
     type: String,
     required: true,
   },
-  tags: {
-    type: [String],
+  features: [String],
+  specifications: [String],
+  price: {
+    type: Number,
     required: true,
   },
-  size: {
-    type: [String],
-     required: true,
+  weight: Number,
+  dimensions: {
+    length: Number,
+    width: Number,
+    height: Number,
   },
-  color: {
-    type: String,
-    required: true,
+  shippingOptions: [{
+    name: {
+      type: String,
+      required: true,
+    },
+    cost: {
+      type: Number,
+      required: true,
+    },
+    estimatedDeliveryTime: {
+      type: String,
+      required: true,
+    },
+  }],
+  createdAt: {
+    type: Date,
+    default: Date.now,
   },
-  productId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Product',
-    required: true,
-  }
-}, { timestamps: true });
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
 
-const ProductDetails = mongoose.models.ProductDetails || mongoose.model('ProductDetails', ProductDetailsSchema);
+const DetailProduct = mongoose.models.DetailProduct || mongoose.model('DetailProduct', detailProductSchema);
 
-export default ProductDetails;
+export default DetailProduct;

@@ -6,16 +6,13 @@ const BrandSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  description: String,
   CategoryId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Category',
     required: true,
   },
-  image: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Image',
-    required: true,
-  },
+  image: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Image' }], // Reference to Image model
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

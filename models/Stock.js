@@ -1,18 +1,24 @@
-// models/Stock.js
 import mongoose from 'mongoose';
 
 const StockSchema = new mongoose.Schema({
-  productId: {
+  product: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Product',
+    required: true,
+  },
+  color: {
+    type: String,
     required: true,
   },
   quantity: {
     type: Number,
     required: true,
-  }
-}, { timestamps: true });
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
+});
 
-const Stock = mongoose.models.Stock || mongoose.model('Stock', StockSchema);
-
-export default Stock;
+export default mongoose.models.Stock || mongoose.model('Stock', StockSchema);

@@ -32,12 +32,15 @@ export default async function handler(req, res) {
       const categoryId = Array.isArray(fields.CategoryId) ? fields.CategoryId[0] : fields.CategoryId;
       const userId = Array.isArray(fields.userId) ? fields.userId[0] : fields.userId;
 
+      console.log(categoryId);
+      
       try {
         // Ensure category exists
         const category = await Category.findById(categoryId);
         if (!category) {
           return res.status(400).json({ success: false, error: 'Category not found' });
         }
+        console.log(files.image);
 
         const imageUrls = [];
         if (files.image) {
@@ -47,6 +50,7 @@ export default async function handler(req, res) {
             fs.renameSync(file.filepath, newFilePath);
             imageUrls.push(`${file.newFilename}`);
           }
+          
           const newImage = new Image({
             urls: imageUrls,
             refId: category._id,

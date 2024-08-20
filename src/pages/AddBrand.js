@@ -15,6 +15,8 @@ const AddBrands = () => {
     const data = await res.json();
     if (data.success) {
       setBrands(data.data);
+      console.log(data.data);
+      
     }
   };
 
@@ -62,6 +64,7 @@ const AddBrands = () => {
 };
 
 const BrandsTable = ({ brands, onRowClick, handleDelete }) => {
+  
   return (
     <Table className="table table-success table-striped">
       <thead>
@@ -73,13 +76,13 @@ const BrandsTable = ({ brands, onRowClick, handleDelete }) => {
         </tr>
       </thead>
       <tbody>
-        {brands.map((brand) => (
+        {brands.length >0  && brands.map((brand) => (
           <tr key={brand._id}>
             <td onClick={() => onRowClick(brand)}>{brand.name}</td>
             <td onClick={() => onRowClick(brand)}>{brand.CategoryId ? brand.CategoryId.name : 'None'}</td>
             <td onClick={() => onRowClick(brand)}>
               {brand.image ? (
-                <img src={`images/uploads/brands/${brand.image.urls[0]}`} alt={brand.name} width="50" />
+                <img src={`images/uploads/brands/${brand.image[0].urls}`} alt={brand.name} width="50" />
               ) : (
                 'No Image'
               )}
