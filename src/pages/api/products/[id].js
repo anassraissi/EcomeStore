@@ -1,9 +1,9 @@
-// pages/api/products/[id].js
 import formidable from 'formidable';
 import path from 'path';
+import fs from 'fs';
 import dbConnect from '../../../../lib/mongodb';
 import Product from '../../../../models/Product';
-import fs from 'fs';
+import Stock from '../../../../models/Stock';
 
 export const config = {
   api: {
@@ -14,10 +14,9 @@ export const config = {
 export default async function handler(req, res) {
   await dbConnect();
 
-  const { method, query: { id } } = req;
-
-  if (method === 'PUT') {
+  if (req.method === 'PUT') { // Update operation
     const form = formidable({
+      uploadDir: path.join(process.cwd(), 'public', 'images', 'uploads', 'products'),
       keepExtensions: true,
     });
 
@@ -27,70 +26,94 @@ export default async function handler(req, res) {
         return res.status(500).json({ success: false, error: 'Form parsing error' });
       }
 
-      // Extract fields from form data
-      const name = Array.isArray(fields.name) ? fields.name[0] : fields.name;
-      const sex = Array.isArray(fields.sex) ? fields.sex[0] : fields.sex;
-      const description = Array.isArray(fields.description) ? fields.description[0] : fields.description;
-      const price = Array.isArray(fields.price) ? fields.price[0] : fields.price;
-      const category = Array.isArray(fields.category) ? fields.category[0] : fields.category;
-      const stock = Array.isArray(fields.stock) ? fields.stock[0] : fields.stock;
-      const parentCatName = Array.isArray(fields.parentCatName) ? fields.parentCatName[0] : fields.parentCatName;
-
-      // Adjust the uploadDir path dynamically based on the product name
-      const uploadDir = path.join(process.cwd(), 'public', 'images', 'uploads', 'products', parentCatName, name);
-
-      // Create a directory for the product if it doesn't exist
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
-        console.log(`Created directory: ${uploadDir}`);
-      }
-
-      const imageUrls = [];
-      for (const key in files) {
-        if (files.hasOwnProperty(key)) {
-          const fileArray = Array.isArray(files[key]) ? files[key] : [files[key]];
-
-          fileArray.forEach(file => {
-            const newFilePath = path.join(uploadDir, file.newFilename);
-            fs.renameSync(file.filepath, newFilePath); // Move file to the product directory
-            imageUrls.push(`/images/uploads/products/${parentCatName}/${name}/${file.newFilename}`);
-          });
-        }
-      }
-
-      try {
-        const updatedProduct = await Product.findByIdAndUpdate(
-          id,
-          {
-            name,
-            description,
-            price,
-            category,
-            sex,
-            ...(imageUrls.length > 0 && { imageUrls }),
-            stock: parseInt(stock, 10),
-          },
-          { new: true }
-        );
-
-        if (!updatedProduct) {
+      const {
+        name,
+        category,
+        brand,
+        userId,
+        tags,
+        description,
+        features,
+        specifications,
+        price,
+        weight,
+        dimensions = '{}',
+        shippingOptions = '[]',
+        } = fields;
+        console.log(fields);
+        
+        
+        try {
+          const productId = req.query.id; // Assuming you're passing the product ID in the query params
+          const product = await Product.findById(productId);
+          if (!product) {
           return res.status(404).json({ success: false, error: 'Product not found' });
         }
 
-        res.status(200).json({ success: true, data: updatedProduct });
+        // Update basic fields
+        product.name = name[0];
+        product.category = category[0];
+        product.brand = brand[0];
+        product.userId = userId[0];
+        product.tags = tags[0];
+        product.description = description[0];
+        product.features = features[0];
+        product.specifications = specifications[0];
+        product.price = price[0];
+        product.weight = weight[0];
+        product.dimensions = JSON.parse(dimensions[0]);
+        product.shippingOptions = JSON.parse(shippingOptions[0]);
+        
+        // Handle colors and stock updates
+        const colors = [];
+        for (const key in fields) {
+          if (key.startsWith('colors[')) {
+            const match = key.match(/colors\[(\d+)\]\[(\w+)\]/);
+            if (match) {
+              const index = parseInt(match[1], 10);
+              const fieldName = match[2];
+              if (!colors[index]) {
+                colors[index] = {};
+              }
+              colors[index][fieldName] = fields[key][0];
+            }
+          }
+        }
+
+        // Update the stock for each color
+        for (const colorData of colors) {
+          const existingStock = await Stock.findOne({
+            product: productId,
+            color: colorData.color,
+          });
+
+          if (existingStock) {
+            // Make sure you're only setting the stock to the new value
+            const newQuantity = parseInt(colorData.stock, 10);
+            console.log(`Updating stock for color ${colorData.color}: ${existingStock.quantity} -> ${newQuantity}`);
+            existingStock.quantity = newQuantity;  // No calculation, just set it
+            await existingStock.save();
+          } else {
+            // If the stock for the color doesn't exist, create new stock
+            const newStock = new Stock({
+              product: productId,
+              color: colorData.color,
+              quantity: parseInt(colorData.stock, 10),
+              userId: userId[0],
+            });
+            await newStock.save();
+          }
+        }
+
+        await product.save();
+
+        return res.status(200).json({ success: true, data: product });
       } catch (error) {
         console.error('Database error:', error);
-        res.status(400).json({ success: false, error: `Database error: ${error.message}` });
+        res.status(500).json({ success: false, error: `Database error: ${error.message}` });
       }
     });
-  } else if (method === 'DELETE') {
-    try {
-      await Product.findByIdAndDelete(id);
-      res.status(200).json({ success: true });
-    } catch (error) {
-      res.status(400).json({ success: false });
-    }
   } else {
-    res.status(405).json({ success: false, error: 'Method not allowed' });
+    return res.status(405).json({ success: false, error: 'Method not allowed' });
   }
 }

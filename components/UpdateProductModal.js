@@ -79,7 +79,7 @@ const UpdateProductModal = ({ product, onClose }) => {
     });
 
     if (res.ok) {
-        toast.success('Add product successful ')
+        toast.success('update product successful ')
       onClose();
     } else {
       toast.error('Failed to update product');

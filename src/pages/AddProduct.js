@@ -9,14 +9,17 @@ const AddProducts = () => {
 
   const fetchProducts = async () => {
     const res = await fetch('/api/products');
+      
     const data = await res.json();
+    
     if (data.success) {
       setProducts(data.data);
-    }
+    }    
   };
 
   useEffect(() => {
     fetchProducts();
+    
   }, []);
 
   const handleRowClick = (product) => {
@@ -42,7 +45,7 @@ const AddProducts = () => {
         <Button 
           variant="contained" 
           color="primary" 
-          onClick={() => setShowFormModal(true)}
+          onClick={() => {setShowFormModal(true),setSelectedProduct(null)}}
         >
           Add Product
         </Button>
