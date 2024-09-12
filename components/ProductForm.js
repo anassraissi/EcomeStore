@@ -22,6 +22,7 @@
       name: '',
       category: '',
       brand: '',
+      sex: 'both', // Default to 'both'
       colors: [{ color: '', images: [], imagePreviews: [], stock: 0 }],
       tags: '',
       description: '',
@@ -61,13 +62,14 @@
         }
       };
 
-      fetchData();
+      fetchData();  
 
       if (productToEdit) {
         setFormData({
           name: productToEdit.name || '',
           category: productToEdit.category?._id || '',
           brand: productToEdit.brand?._id || '',
+          sex: productToEdit?.sex || 'both',  // Use productToEdit.sex if available, else 'both'
           colors:
             productToEdit.colors.map((color) => ({
               color: color.color || '',
@@ -192,6 +194,7 @@
       formDataForUpload.append('specifications', formData.specifications);
       formDataForUpload.append('price', formData.price);
       formDataForUpload.append('weight', formData.weight);
+      formDataForUpload.append('sex', formData.sex);
       formDataForUpload.append(
         'dimensions',
         JSON.stringify(formData.dimensions)
@@ -302,6 +305,25 @@
               </Select>
             </FormControl>
           </Box>
+          <Box sx={{ minWidth: 120, marginTop: 2 }}>
+            <FormControl fullWidth>
+              <InputLabel id="sex-select-label">Sex</InputLabel>
+              <Select
+                labelId="sex-select-label"
+                id="sex-select"
+                name="sex"
+                value={formData.sex}
+                label="Sex"
+                onChange={handleChange}
+                required
+              >
+                <MenuItem value="both">Both</MenuItem>
+                <MenuItem value="men">Men</MenuItem>
+                <MenuItem value="women">Women</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+
           {formData.colors.map((colorData, index) => (
               <Box key={index} sx={{ marginTop: 2 }}>
               <TextField

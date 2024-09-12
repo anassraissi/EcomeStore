@@ -20,6 +20,11 @@ const ProductSchema = new mongoose.Schema({
     ref: 'User',
     required: true,
   },
+  sex: {
+    type: String,
+    enum: ['men', 'women', 'both'],  // Enum for allowed values
+    required: true,
+  },
   colors: [
     {
       color: {

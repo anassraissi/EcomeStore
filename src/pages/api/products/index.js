@@ -43,7 +43,10 @@
           weight,
           dimensions = '{}',
           shippingOptions = '[]',
+          sex
         } = fields;
+        console.log(fields);
+        
 
         try {
           // Parse dimensions and shippingOptions
@@ -72,6 +75,7 @@
             userId: Array.isArray(userId) ? userId[0] : userId,
             details: detailProduct._id,
             tags: Array.isArray(tags) ? tags : [tags],
+            sex:Array.isArray(sex) ? sex[0] : sex
           });
 
           const savedProduct = await newProduct.save();
