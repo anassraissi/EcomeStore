@@ -55,31 +55,44 @@
           const parsedDimensions = JSON.parse(dimensionsString || '{}');
           const parsedShippingOptions = JSON.parse(shippingOptionsString || '[]');
 
-          // Create the DetailProduct document
-          const detailProduct = new DetailProduct({
-            description: Array.isArray(description) ? description[0] : description,
-            features: Array.isArray(features) ? features : [features],
-            specifications: Array.isArray(specifications) ? specifications : [specifications],
-            price: Array.isArray(price) ? price[0] : price,
-            weight: Array.isArray(weight) ? weight[0] : weight,
-            dimensions: parsedDimensions,
-            shippingOptions: parsedShippingOptions,
-          });
-          await detailProduct.save();
+                  // Create the Product document first
+                  const newProduct = new Product({
+                    name: Array.isArray(name) ? name[0] : name,
+                    category: Array.isArray(category) ? category[0] : category,
+                    brand: Array.isArray(brand) ? brand[0] : brand,
+                    userId: Array.isArray(userId) ? userId[0] : userId,
+                    tags: Array.isArray(tags) ? tags : [tags],
+                    sex: Array.isArray(sex) ? sex[0] : sex,
+                    details: null, // Set to null initially
 
-          // Create the Product document first
-          const newProduct = new Product({
-            name: Array.isArray(name) ? name[0] : name,
-            category: Array.isArray(category) ? category[0] : category,
-            brand: Array.isArray(brand) ? brand[0] : brand,
-            userId: Array.isArray(userId) ? userId[0] : userId,
-            details: detailProduct._id,
-            tags: Array.isArray(tags) ? tags : [tags],
-            sex:Array.isArray(sex) ? sex[0] : sex
-          });
+                  });
 
-          const savedProduct = await newProduct.save();
+                  const savedProduct = await newProduct.save();
 
+                  // Create the DetailProduct document
+                  const detailProduct = new DetailProduct({
+                    productId: savedProduct._id,
+                    description: Array.isArray(description) ? description[0] : description,
+                    
+                    // Remove spaces around each feature
+                    features: Array.isArray(features) ? features.map(item => item.trim()) : [features.trim()],
+                    
+                    // Remove spaces around each specification
+                    specifications: Array.isArray(specifications) 
+                      ? specifications.map(item => item.trim()) 
+                      : [specifications.trim()],
+                    
+                    price: Array.isArray(price) ? price[0] : price,
+                    weight: Array.isArray(weight) ? weight[0] : weight,
+                    dimensions: parsedDimensions,
+                    shippingOptions: parsedShippingOptions,
+                  });
+
+                  await detailProduct.save();
+
+                  // Update the Product with the details field
+                  savedProduct.details = detailProduct._id;
+                  await savedProduct.save();
           // Reconstruct colors from individual fields and associate images with colors
           const colors = [];
           const imageIds = [];

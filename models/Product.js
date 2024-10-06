@@ -34,7 +34,7 @@ const ProductSchema = new mongoose.Schema({
       stock: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Stock', // Reference to the Stock model
-        required: true,
+        required: false,
       },
       images: [
         {
@@ -48,7 +48,7 @@ const ProductSchema = new mongoose.Schema({
   details: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'DetailProduct',
-    required: true,
+    required: false,
   },
   tags: [
     {
