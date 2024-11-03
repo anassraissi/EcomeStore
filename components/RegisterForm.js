@@ -3,6 +3,8 @@ import axios from 'axios';
 import { useRouter } from 'next/router';
 import 'mdb-react-ui-kit/dist/css/mdb.min.css'; // Import MDB React UI Kit CSS
 import { MDBInput } from 'mdb-react-ui-kit';
+import { toast } from 'react-toastify';
+
 
 const RegisterForm = ({ closeModal }) => {
   const router = useRouter();
@@ -10,8 +12,10 @@ const RegisterForm = ({ closeModal }) => {
   const [role, setRole] = useState("");
 
   useEffect(() => {
-    if (localStorage.getItem('role') == 'admin') {
-      setRole(localStorage.getItem('role'));
+      if (localStorage.getItem('role')) {
+          setRole('admin');
+          console.log(role);
+      
     }
   }, []);
 
@@ -20,9 +24,9 @@ const RegisterForm = ({ closeModal }) => {
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'user', // Default role
-    phone: '',
-    address: ''
+    role: 'customer', // Default role
+    telephone: '',
+    adresse: ''
   });
 
   const handleChange = (e) => {
@@ -32,18 +36,37 @@ const RegisterForm = ({ closeModal }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log(formData);
+    
     try {
       const response = await axios.post('/api/register', formData);
       console.log('Registration successful!', response.data);
-      // Optionally display a success message
-      router.reload('/');
-      closeModal(); // Close modal after successful registration
+      toast.success('Registration successful!');
+          // Clear the form inputs
+    setFormData({
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      role: 'customer',
+      telephone: '',
+      adresse: ''
+    });
+
+  
+      // Close the modal after successful registration
+      if (localStorage.getItem('role') !== "admin") {
+        closeModal();
+        // router.reload('/');
+      } else {
+        closeModal();
+      }
     } catch (error) {
       console.error('Registration failed!', error);
-      // Optionally display an error message
+      // toast.error('Registration failed!');
     }
   };
-
+  
   return (
     <div className="modal-content">
       <div className="modal-header">
@@ -114,9 +137,9 @@ const RegisterForm = ({ closeModal }) => {
               type="text"
               id="phone"
               className="form-control"
-              name="phone"
+              name="telephone"
               placeholder="Phone number with country code"
-              value={formData.phone}
+              value={formData.telephone}
               onChange={handleChange}
               data-mdb-input-mask="+48 999-999-999"
               required
@@ -129,9 +152,9 @@ const RegisterForm = ({ closeModal }) => {
               type="text"
               className="form-control"
               id="addressInput"
-              name="address"
+              name="adresse"
               placeholder="Address"
-              value={formData.address}
+              value={formData.adresse}
               onChange={handleChange}
               required
             />
@@ -147,15 +170,18 @@ const RegisterForm = ({ closeModal }) => {
                 onChange={handleChange}
                 required
               >
-          {role && (
+          {role ? (
              <>
                              <option value="admin">Admin</option>
                              <option value="operator">Operator</option>
              </>
-              ) 
+              )  :
+                              <>
+                              <option value="customer">customer</option>
+                              <option value="seller">seller</option>
+                              </>
           }
-                <option value="user">user</option>
-                <option value="seller">seller</option>
+               
 
 
               </select>

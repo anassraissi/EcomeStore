@@ -13,7 +13,7 @@ const CategoryForm = ({ fetchCategories }) => {
   useEffect(() => {
     setUserId(localStorage.getItem('userId'));
     fetchCategoriesData();
-  }, []);
+  }, [categories]);
 
   const fetchCategoriesData = async () => {
     try {

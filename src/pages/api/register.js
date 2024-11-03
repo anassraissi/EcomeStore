@@ -8,27 +8,30 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
-
-  const { name, email, password, role, phone, address } = req.body;
-
+  
+  const { name, email, password, role, telephone, adresse } = req.body;
+  
+  
   try {
-    // Check if user already exists
+    
+    // console.log("anass",phone,address);
+
     let user = await User.findOne({ email });
-    if (user) {
+    if (user) { 
       return res.status(400).json({ message: 'User already exists' });
     }
 
     // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create new user
     user = new User({
       name,
       email,
-      password: hashedPassword,
+      password,
       role, // Assign the role here
-      phone,
-      address
+      telephone,
+      adresse
     });
 
     await user.save();

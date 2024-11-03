@@ -15,8 +15,10 @@ const LoginForm = () => {
     e.preventDefault();
 
     try {
+
       const { user, token } = await login(email, password);
       toast.success('Login successful!');
+      if(localStorage.getItem('role'))
       router.reload('/');
     } catch (error) {
       console.error('Login error:', error);

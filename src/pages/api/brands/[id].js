@@ -1,4 +1,4 @@
-// pages/api/brands/[id].js
+// /pages/api/brands/[id].js
 import formidable from 'formidable';
 import path from 'path';
 import fs from 'fs';
@@ -40,84 +40,108 @@ export default async function handler(req, res) {
           return res.status(404).json({ success: false, error: 'Brand not found' });
         }
 
-        // Ensure brand.images is initialized as an array
-        if (!Array.isArray(brand.images)) {
-          brand.images = [];
+        // Ensure brand.images is an array and get the existing image document
+        if (!Array.isArray(brand.image)) {
+          brand.image = [];
         }
+        let existingImage = null;
+        console.log(" image ",brand.image[0]);
+        if (brand.image.length > 0) {
+          // Assuming there's only one image per brand, fetch the first image
+          existingImage = await Image.findById(brand.image[0]); 
 
-        // Remove existing images from the directory and database if new images are uploaded
-        if (files.image) {
-          // Remove existing images if any
-          if (brand.images.length > 0) {
-            for (const imageId of brand.images) {
-              const image = await Image.findById(imageId);
-              if (image) {
-                for (const url of image.urls) {
-                  const imagePath = path.join(process.cwd(), 'public', 'images', 'uploads', 'brands', path.parse(url).base);
-                  if (fs.existsSync(imagePath)) {
-                    fs.unlinkSync(imagePath);
-                  }
-                }
-                await Image.findByIdAndDelete(imageId);
+          if (existingImage) {
+            // Delete old image file from disk
+            for (const url of existingImage.urls) {
+              const oldImagePath = path.join(process.cwd(), 'public', 'images', 'uploads', 'brands', path.parse(url).base);
+              if (fs.existsSync(oldImagePath)) {
+                fs.unlinkSync(oldImagePath);
               }
             }
           }
+        }
 
-          // Process and save new image(s)
+        if (files.image) {
           const imageUrls = [];
           const fileArray = Array.isArray(files.image) ? files.image : [files.image];
+
           for (const file of fileArray) {
             const newFilePath = path.join(form.uploadDir, file.newFilename);
             fs.renameSync(file.filepath, newFilePath);
             imageUrls.push(`${path.parse(newFilePath).base}`);
           }
 
-          const newImage = new Image({
-            urls: imageUrls,
-            refId: brand._id,
-            userId: userId,
-            type: 'brand',
-          });
+          if (existingImage) {
+            // Update existing image document with new URL(s)
+            existingImage.urls = imageUrls;
+            await existingImage.save(); // Save the updated image document
+          } else {
+            // Create a new image document if no existing image is found
+            const newImage = new Image({
+              urls: imageUrls,
+              refId: brand._id,
+              userId: userId,
+              type: 'brand',
+            });
+            await newImage.save();
+            brand.image = [newImage._id]; // Associate new image with brand
+          }
 
-          await newImage.save();
-          brand.images = [newImage._id];
+          // Update brand information and save
+          brand.name = name;
+          brand.categoryId = categoryId;
+          brand.userId = userId;
+          await brand.save();
+
+          res.status(200).json(brand);
+        } else {
+          res.status(400).json({ success: false, error: 'No image uploaded' });
         }
-
-        // Update brand details
-        brand.name = name;
-        brand.categoryId = categoryId;
-        brand.userId = userId;
-
-        await brand.save();
-
-        res.status(200).json(brand);
       } catch (error) {
         console.error('Database error:', error);
         res.status(400).json({ success: false, error: `Database error: ${error.message}` });
       }
     });
-  } else if (method === 'DELETE') {
+  } 
+  
+  else if (method === 'DELETE') {
     try {
-      const brand = await Brand.findByIdAndDelete(id);
-      if (brand && Array.isArray(brand.images)) {
-        for (const imageId of brand.images) {
+      // Find the brand by ID to access its images before deletion
+      const brand = await Brand.findById(id);
+      if (!brand) {
+        return res.status(404).json({ success: false, error: 'Brand not found' });
+      }
+  
+      // Delete associated images from both the database and filesystem
+      if (Array.isArray(brand.image)) {
+        for (const imageId of brand.image) {
           const image = await Image.findById(imageId);
+          console.log("image",image);
+          
           if (image) {
             for (const url of image.urls) {
               const imagePath = path.join(process.cwd(), 'public', 'images', 'uploads', 'brands', path.parse(url).base);
               if (fs.existsSync(imagePath)) {
-                fs.unlinkSync(imagePath);
+                fs.unlinkSync(imagePath); // Delete image file from filesystem
               }
             }
-            await Image.findByIdAndDelete(imageId);
+            await Image.findByIdAndDelete(imageId); // Delete image document from database
           }
         }
       }
+  
+      // Delete the brand document from the database
+      await Brand.findByIdAndDelete(id);
+  
       res.status(200).json({ success: true });
     } catch (error) {
-      res.status(400).json({ success: false, error: 'Failed to delete brand' });
+      console.error('Error deleting brand or images:', error);
+      res.status(400).json({ success: false, error: 'Failed to delete brand and images' });
     }
-  } else {
+  }
+  
+  
+  else {
     res.status(405).json({ success: false, error: 'Method not allowed' });
   }
 }

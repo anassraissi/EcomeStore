@@ -8,9 +8,12 @@ export function AuthProvider({ children }) {
   let logoutTimer;
 
   const login = async (email, password) => {
+    
     try {
       const response = await axios.post('/api/login', { email, password });
       const { token, user } = response.data;
+      console.log(response.data);
+      
       localStorage.setItem('token', token);
       localStorage.setItem('username', user.name);
       localStorage.setItem('role', user.role);

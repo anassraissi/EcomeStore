@@ -17,8 +17,15 @@ export default async function handler(req, res) {
   await dbConnect();
 
   if (req.method === 'POST') {
+    const uploadDir = path.join(process.cwd(), 'public', 'images', 'uploads', 'brands');
+    
+    // Ensure the upload directory exists
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+
     const form = formidable({
-      uploadDir: path.join(process.cwd(), 'public', 'images', 'uploads', 'brands'),
+      uploadDir,
       keepExtensions: true,
     });
 
@@ -32,21 +39,18 @@ export default async function handler(req, res) {
       const categoryId = Array.isArray(fields.CategoryId) ? fields.CategoryId[0] : fields.CategoryId;
       const userId = Array.isArray(fields.userId) ? fields.userId[0] : fields.userId;
 
-      console.log(categoryId);
-      
       try {
         // Ensure category exists
         const category = await Category.findById(categoryId);
         if (!category) {
           return res.status(400).json({ success: false, error: 'Category not found' });
         }
-        console.log(files.image);
 
         const imageUrls = [];
         if (files.image) {
           const fileArray = Array.isArray(files.image) ? files.image : [files.image];
           for (const file of fileArray) {
-            const newFilePath = path.join(form.uploadDir, file.newFilename);
+            const newFilePath = path.join(uploadDir, file.newFilename);
             fs.renameSync(file.filepath, newFilePath);
             imageUrls.push(`${file.newFilename}`);
           }
@@ -54,7 +58,7 @@ export default async function handler(req, res) {
           const newImage = new Image({
             urls: imageUrls,
             refId: category._id,
-            userId:userId,
+            userId,
             type: 'brand',
           });
           const savedImage = await newImage.save();
@@ -63,7 +67,7 @@ export default async function handler(req, res) {
             name,
             CategoryId: categoryId,
             image: savedImage._id,
-            userId:userId
+            userId,
           });
 
           await newBrand.save();

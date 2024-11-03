@@ -4,7 +4,6 @@ import UpdateCategoryModal from "../../components/UpdateCategoryModal";
 import { Table } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 
-
 const AddCategories = () => {
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -17,8 +16,11 @@ const AddCategories = () => {
       setCategories(data.data);
     }
   };
+
   useEffect(() => {
     fetchCategories();
+    console.log(categories);
+    
   }, []);
   
   const handleDelete = async (categoryId) => {
@@ -27,7 +29,7 @@ const AddCategories = () => {
     });
     if (res.ok) {
       fetchCategories(); // Re-fetch categories after deletion
-      toast.success('item deleted successful')
+      toast.success('Item deleted successfully');
     } else {
       toast.error('Failed to delete category');
     }
@@ -51,9 +53,17 @@ const AddCategories = () => {
     <div>
       <CategoryForm fetchCategories={fetchCategories} />
       <h2>Parent Categories</h2>
-      <CategoriesTable categories={parentCategories} onRowClick={handleRowClick} handleDelete={handleDelete} />
+      <CategoriesTable 
+        categories={parentCategories} 
+        onRowClick={handleRowClick} 
+        handleDelete={handleDelete} 
+      />
       <h2>Subcategories</h2>
-      <CategoriesTable categories={subCategories} onRowClick={handleRowClick} handleDelete={handleDelete} />
+      <CategoriesTable 
+        categories={subCategories} 
+        onRowClick={handleRowClick} 
+        handleDelete={handleDelete} 
+      />
       {isModalOpen && selectedCategory && (
         <UpdateCategoryModal 
           category={selectedCategory} 
@@ -79,19 +89,25 @@ const CategoriesTable = ({ categories, onRowClick, handleDelete }) => {
       </thead>
       <tbody>
         {categories.map(category => (
-          
           <tr key={category._id}>
             <td onClick={() => onRowClick(category)}>{category.name}</td>
             <td onClick={() => onRowClick(category)}>{category.parent_id ? category.parent_id.name : 'None'}</td>
             <td onClick={() => onRowClick(category)}>
-              {category.images ? (
-                <img src ={`images/uploads/categories/${category.images[0]?.urls}`} alt={category.name} width="50" />
+              {category.images && category.images.length > 0 ? (
+                <img 
+                    src={`/images/uploads/categories/${category.images[0].urls}`}
+                  alt={category.name} 
+                  width="50" 
+                />
               ) : (
                 'No Image'
               )}
             </td>
             <td>
-              <button onClick={(e) => { e.stopPropagation(); handleDelete(category._id); }} className="btn btn-danger">
+              <button 
+                onClick={(e) => { e.stopPropagation(); handleDelete(category._id); }} 
+                className="btn btn-danger"
+              >
                 Delete  
               </button>
             </td>

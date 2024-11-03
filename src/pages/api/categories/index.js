@@ -16,8 +16,15 @@ export default async function handler(req, res) {
   await dbConnect();
 
   if (req.method === 'POST') {
+    const uploadDir = path.join(process.cwd(), 'public', 'images', 'uploads', 'categories');
+    
+    // Check if the directory exists and create it if not
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+
     const form = formidable({
-      uploadDir: path.join(process.cwd(), 'public', 'images', 'uploads', 'categories'),
+      uploadDir, // Set the directory
       keepExtensions: true,
     });
 
@@ -37,7 +44,7 @@ export default async function handler(req, res) {
         const newCategory = new Category({
           name,
           parent_id: parent_id || null,
-          userId:userId, // Save the userId in the category
+          userId, // Save the userId in the category
         });
 
         await newCategory.save();
@@ -46,7 +53,7 @@ export default async function handler(req, res) {
         if (files.image) {
           const fileArray = Array.isArray(files.image) ? files.image : [files.image];
           for (const file of fileArray) {
-            const newFilePath = path.join(form.uploadDir, file.newFilename);
+            const newFilePath = path.join(uploadDir, file.newFilename);
             fs.renameSync(file.filepath, newFilePath);
             imageUrls.push(`${file.newFilename}`);
           }
@@ -54,7 +61,7 @@ export default async function handler(req, res) {
           const newImage = new Image({
             urls: imageUrls, // Save image filenames as an array
             refId: newCategory._id,
-            userId:userId, // Save the userId in the image
+            userId, // Save the userId in the image
             type: 'category',
           });
           const savedImage = await newImage.save();
