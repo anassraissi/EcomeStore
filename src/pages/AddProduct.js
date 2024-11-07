@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Table, Button } from '@mui/material';
 import { toast } from 'react-toastify';
 import ProductFormModal from '../../components/ProductFormModal';
+
 const AddProducts = () => {
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -9,17 +10,14 @@ const AddProducts = () => {
 
   const fetchProducts = async () => {
     const res = await fetch('/api/products');
-      
     const data = await res.json();
-    
     if (data.success) {
       setProducts(data.data);
-    }    
+    }
   };
 
   useEffect(() => {
     fetchProducts();
-    
   }, []);
 
   const handleRowClick = (product) => {
@@ -27,7 +25,8 @@ const AddProducts = () => {
     setShowFormModal(true);
   };
 
-  const handleDelete = async (productId) => {
+  const handleDelete = async (event, productId) => {
+    event.stopPropagation(); // Prevent the row click event from triggering
     const res = await fetch(`/api/products/${productId}`, {
       method: 'DELETE',
     });
@@ -45,7 +44,7 @@ const AddProducts = () => {
         <Button 
           variant="contained" 
           color="primary" 
-          onClick={() => {setShowFormModal(true),setSelectedProduct(null)}}
+          onClick={() => {setShowFormModal(true); setSelectedProduct(null);}}
         >
           Add Product
         </Button>
@@ -112,7 +111,7 @@ const ProductsTable = ({ products, handleRowClick, handleDelete }) => {
             <td>${product.details.price}</td>
             <td>
               <Button 
-                onClick={() => handleDelete(product._id)} 
+                onClick={(event) => handleDelete(event, product._id)} // Pass event to prevent row click
                 variant="contained" 
                 color="error"
               >

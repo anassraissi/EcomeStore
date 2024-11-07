@@ -6,7 +6,6 @@ import Product from '../../../../models/Product';
 import Stock from '../../../../models/Stock';
 import DetailProduct from '../../../../models/DetailsProduct';
 import Image from '../../../../models/Image';
-import { log } from 'react-modal/lib/helpers/ariaAppHider';
 
 export const config = {
   api: {
@@ -18,9 +17,28 @@ export default async function handler(req, res) {
   await dbConnect();
 
   if (req.method === 'PUT') {
+    const productId = req.query.id;
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ success: false, error: 'Product not found' });
+    }
+
+    // Define the exact path for the product folder
+    const productSlug = product.name.replace(/\s+/g, '-').toLowerCase();
+    const productFolderPath = path.join(process.cwd(), 'public', 'images', 'uploads', 'products', productSlug);
+    console.log("productFolderPath:", productFolderPath);
+
+    // Only create the folder if the exact path does not exist
+    if (!fs.existsSync(productFolderPath)) {
+      console.log("Folder does not exist, creating new folder:", productFolderPath);
+      fs.mkdirSync(productFolderPath, { recursive: true });
+    } else {
+      console.log("Using existing folder for product images:", productFolderPath);
+    }
+
     const form = formidable({
-      multiples: true, // Allow multiple file uploads
-      uploadDir: path.join(process.cwd(), 'public', 'images', 'uploads', 'products'),
+      multiples: true,
+      uploadDir: productFolderPath, // Use the exact folder path for each product
       keepExtensions: true,
     });
 
@@ -29,208 +47,141 @@ export default async function handler(req, res) {
         console.error('Formidable error:', err);
         return res.status(500).json({ success: false, error: 'Form parsing error' });
       }
+      console.log("Uploaded files:", files);
+      console.log("Expected product folder path:", productFolderPath);
 
       try {
-        const {
-          name = [''],
-          category = [''],
-          brand = [''],
-          userId = [''],
-          tags = [''],
-          description = [''],
-          features = [''],
-          specifications = [''],
-          price = [''],
-          weight = [''],
-          sex = ['both'],
-          dimensions = ['{}'],
-          shippingOptions = ['[]'],
-        } = fields;
+        // Update product details based on fields
+        product.name = fields.name[0];
+        product.category = fields.category[0];
+        product.brand = fields.brand[0];
+        product.userId = fields.userId[0];
+        product.tags = fields.tags[0];
+        product.description = fields.description[0];
+        product.price = parseFloat(fields.price[0]);
+        product.weight = parseFloat(fields.weight[0]);
+        product.dimensions = JSON.parse(fields.dimensions[0]);
+        product.shippingOptions = JSON.parse(fields.shippingOptions[0]);
+        product.sex = fields.sex[0] || 'both';
 
-        console.log('Parsed Fields:', fields);
-        console.log('Uploaded Files:', files);
-
-        const productId = req.query.id;
-        const product = await Product.findById(productId);
-        if (!product) {
-          return res.status(404).json({ success: false, error: 'Product not found' });
-        }
-
-        // Update product fields
-        product.name = name[0];
-        product.category = category[0];
-        product.brand = brand[0];
-        product.userId = userId[0];
-        product.tags = tags[0];
-        product.description = description[0];
-        product.price = parseFloat(price[0]);
-        product.weight = parseFloat(weight[0]);
-        product.dimensions = JSON.parse(dimensions[0]);
-        product.shippingOptions = JSON.parse(shippingOptions[0]);
-        product.sex = sex[0] || 'both';
-
-        let detailProduct = await DetailProduct.findOne({ productId: productId });
+        // Update DetailProduct
+        let detailProduct = await DetailProduct.findOne({ productId });
         if (!detailProduct) {
           detailProduct = new DetailProduct({
-            productId: productId,
-            description: description[0],
-            features: features[0].split(','),
-            specifications: specifications[0].split(','),
-            price: parseFloat(price[0]),
-            weight: parseFloat(weight[0]),
-            dimensions: JSON.parse(dimensions[0]),
-            shippingOptions: JSON.parse(shippingOptions[0]),
-            createdAt: new Date(),
-            updatedAt: new Date(),
+            productId,
+            description: fields.description[0],
+            features: fields.features[0].split(','),
+            specifications: fields.specifications[0].split(','),
+            price: parseFloat(fields.price[0]),
+            weight: parseFloat(fields.weight[0]),
+            dimensions: JSON.parse(fields.dimensions[0]),
+            shippingOptions: JSON.parse(fields.shippingOptions[0]),
           });
         } else {
-          detailProduct.description = description[0];
-          detailProduct.features = features[0].split(',');
-          detailProduct.specifications = specifications[0].split(',');
-          detailProduct.price = parseFloat(price[0]);
-          detailProduct.weight = parseFloat(weight[0]);
-          detailProduct.dimensions = JSON.parse(dimensions[0]);
-          detailProduct.shippingOptions = JSON.parse(shippingOptions[0]);
-          detailProduct.updatedAt = new Date();
+          detailProduct.description = fields.description[0];
+          detailProduct.features = fields.features[0].split(',');
+          detailProduct.specifications = fields.specifications[0].split(',');
+          detailProduct.price = parseFloat(fields.price[0]);
+          detailProduct.weight = parseFloat(fields.weight[0]);
+          detailProduct.dimensions = JSON.parse(fields.dimensions[0]);
+          detailProduct.shippingOptions = JSON.parse(fields.shippingOptions[0]);
         }
         await detailProduct.save();
 
+        // Handle color and stock updates
         const colorsArray = [];
         for (const key in fields) {
-          if (key.startsWith('colors[')) {
-            const match = key.match(/colors\[(\d+)\]\[(\w+)\]/);
-            if (match) {
-              const index = parseInt(match[1], 10);
-              const fieldName = match[2];
-              if (!colorsArray[index]) {
-                colorsArray[index] = {};
-              }
-              colorsArray[index][fieldName] = fields[key][0];
+          const match = key.match(/colors\[(\d+)\]\[(\w+)\]/);
+          if (match) {
+            const index = parseInt(match[1], 10);
+            const fieldName = match[2];
+            if (!colorsArray[index]) {
+              colorsArray[index] = {};
             }
+            colorsArray[index][fieldName] = fields[key][0];
           }
         }
 
-        for (const colorIndex in colorsArray) {
-          const colorData = colorsArray[colorIndex];
-
+        for (const colorData of colorsArray) {
           const existingColor = product.colors.find(c => c.color === colorData.color);
-          let colorId;
+          let colorId = existingColor ? existingColor._id : null;
 
           if (!existingColor) {
-            const newColor = {
-              color: colorData.color,
-              stock: null,
-              images: [],
-            };
-            product.colors.push(newColor);
+            product.colors.push({ color: colorData.color, stock: null, images: [] });
             await product.save();
             const updatedProduct = await Product.findById(productId);
-            const createdColor = updatedProduct.colors.find(c => c.color === colorData.color);
-            colorId = createdColor._id;
+            colorId = updatedProduct.colors.find(c => c.color === colorData.color)._id;
+          }
+
+          // Update or create stock
+          let stock = await Stock.findOne({ product: productId, color: colorData.color });
+          if (!stock) {
+            stock = new Stock({ product: productId, color: colorData.color, quantity: parseInt(colorData.stock, 10), userId: fields.userId[0] });
           } else {
-            colorId = existingColor._id;
+            stock.quantity = parseInt(colorData.stock, 10);
           }
+          await stock.save();
 
-          const existingStock = await Stock.findOne({
-            product: productId,
-            color: colorData.color,
-          });
-          
-          if (existingStock) {
-            // Update the existing stock's quantity
-            existingStock.quantity = parseInt(colorData.stock, 10);
-            const updatedStock = await existingStock.save(); // Save the updated stock
-            console.log("Updated existing stock:", updatedStock);
-          
-            // Now update the product with the existing stock reference
-            const updateResult = await Product.updateOne(
-              { _id: productId, 'colors.color': colorData.color },
-              { $set: { 'colors.$.stock': existingStock._id } } // Use existing stock's ID
-            );
-          
-            console.log("Updating product with ID:", productId, "and color:", colorData.color);
-            console.log("Product update result:", updateResult);
-          
-            // Check if the update actually modified a document
-            if (updateResult.nModified === 0) {
-              console.error("Product update failed. Ensure that color matches and the stock reference is updated.");
-            } else {
-              console.log("Product stock reference updated successfully.");
-            }
-          } else {
-            // Handle case where there is no existing stock
-            const newStock = new Stock({
-              product: productId,
-              color: colorData.color,
-              quantity: parseInt(colorData.stock, 10),
-              userId: userId[0],
-            });
-          
-            const savedStock = await newStock.save();
-            console.log("New stock saved:", savedStock);
-          
-            const updateResult = await Product.updateOne(
-              { _id: productId, 'colors.color': colorData.color },
-              { $set: { 'colors.$.stock': savedStock._id } } // Save new stock reference
-            );
-          
-            console.log("Updating product with ID:", productId, "and color:", colorData.color);
-            console.log("Product update result:", updateResult);
-          }
-          
-          
+          // Update product with stock reference
+          await Product.updateOne({ _id: productId, 'colors.color': colorData.color }, { $set: { 'colors.$.stock': stock._id } });
 
-          // Handling single image per color
-          const imageFilesKey = `colors[${colorIndex}][images][0]`;
-          const imageFile = files[imageFilesKey]; // Only one image per color          
-          let savedImageId = null;
-
-          // Get existing image if it exists
-          const existingImages = await Product.findOne(
-            { _id: productId, 'colors.color': colorData.color },
-            { 'colors.$': 1 }
-          );
-
-          if (existingImages && existingImages.colors.length > 0) {
-            const existingColor = existingImages.colors[0];
-            if (existingColor.images && existingColor.images.length > 0) {
-              savedImageId = existingColor.images[0]; // Assume one image exists
-            }
-          }
-
-          // If a new image is uploaded, replace the existing image
+          // Handle image upload for color
+          const imageFile = files[`colors[${colorsArray.indexOf(colorData)}][images][0]`];
+          console.log("imageFile : "+imageFile);
+          
           if (imageFile) {
-            const { newFilename } = imageFile[0];
-            console.log(newFilename);
-            
-
             const image = new Image({
-              urls: [newFilename],
+              urls: [`${productSlug}/${imageFile[0].newFilename}`], // Add productSlug as a folder in the URL
               refId: productId,
-              userId: userId[0],
+              userId: fields.userId[0],
               type: 'product',
               colorId,
             });
             await image.save();
-
-            savedImageId = image._id; // Set new image ID
+            await Product.updateOne({ _id: productId, 'colors.color': colorData.color }, { $set: { 'colors.$.images': [image._id] } });
           }
-
-          // Update the product with the new or existing image for the color
-          await Product.updateOne(
-            { _id: productId, 'colors.color': colorData.color },
-            { $set: { 'colors.$.images': [savedImageId] } } // Ensure it's an array with one image
-          );
         }
 
         await product.save();
-        return res.status(200).json({ success: true, data: product });
+        res.status(200).json({ success: true, data: product });
       } catch (error) {
         console.error('Database error:', error);
         res.status(500).json({ success: false, error: `Database error: ${error.message}` });
       }
     });
+  } else if (req.method === 'DELETE') {
+    const { id } = req.query;
+
+    try {
+      const product = await Product.findById(id);
+      if (!product) {
+        return res.status(404).json({ success: false, error: 'Product not found' });
+      }
+
+      // Delete associated stocks and images
+      await Stock.deleteMany({ product: id });
+      for (const color of product.colors) {
+        for (const imageId of color.images) {
+          const image = await Image.findById(imageId);
+          if (image) {
+            for (const url of image.urls) {
+              const imagePath = path.join(process.cwd(), 'public', 'uploads', 'products', product.name.replace(/\s+/g, '-').toLowerCase(), url);
+              if (fs.existsSync(imagePath)) fs.unlinkSync(imagePath);
+            }
+            await Image.findByIdAndDelete(imageId);
+          }
+        }
+      }
+
+      await DetailProduct.findOneAndDelete({ productId: id });
+      await Product.findByIdAndDelete(id);
+
+      res.status(200).json({ success: true, message: 'Product and associated data deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      res.status(500).json({ success: false, error: `Failed to delete product: ${error.message}` });
+    }
   } else {
-    return res.status(405).json({ success: false, error: 'Method not allowed' });
+    res.status(405).json({ success: false, error: 'Method not allowed' });
   }
 }

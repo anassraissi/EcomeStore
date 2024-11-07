@@ -14,7 +14,6 @@ const Navbar = () => {
 
   const { logout } = useAuth();
   const router = useRouter();
-
   useEffect(() => {
     const userName = localStorage.getItem('username');
     setUsername(userName ? userName : 'Connexion');

@@ -25,7 +25,7 @@
         category: '',
         brand: '',
         sex: 'both', // Default to 'both'
-        colors: [{ color: '', images: [], imagePreviews: [], stock: 0,disabled: true }],
+        colors: [{ color: '', images: [], imagePreviews: [], stock: 0 }],
         tags: '',
         description: '',
         features: '',
@@ -80,8 +80,7 @@
                     img.urls.map((url) => `/images/uploads/products/${url}`)
                   ) || [],
                 stock: color.stock?.quantity || 0,
-                disabled:true
-              })) || [{ color: '', images: [], imagePreviews: [], stock: 0 , disabled:true}],
+              })) || [{ color: '', images: [], imagePreviews: [], stock: 0 }],
             tags: productToEdit.tags.join(', ') || '',
             description: productToEdit.details.description || '',
             features: productToEdit.details.features.join(', ') || '',
@@ -132,7 +131,7 @@
           ...prevData,
           colors: [
             ...prevData.colors,
-            { color: '', stock: '', images: [], imagePreviews: [], disabled: false }
+            { color: '', stock: '', images: [], imagePreviews: [] }
           ],
         }));            
       };
@@ -227,6 +226,8 @@
               body: formDataForUpload,
             }
           );
+          console.log(res);
+            
 
           if (res.ok) {
             toast.success('Product saved successfully');
@@ -341,7 +342,6 @@
                   required
                   desabled
                   margin="normal"
-                  disabled={colorData.disabled}
                   />
                 <input
                   type="file"

@@ -81,7 +81,7 @@ const BrandsTable = ({ brands, onRowClick, handleDelete }) => {
             <td onClick={() => onRowClick(brand)}>{brand.name}</td>
             <td onClick={() => onRowClick(brand)}>{brand.CategoryId ? brand.CategoryId.name : 'None'}</td>
             <td onClick={() => onRowClick(brand)}>
-              {brand.image ? (
+              {brand.image.length >0 ? (
                 <img src={`images/uploads/brands/${brand.image[0].urls}`} alt={brand.name} width="50" />
               ) : (
                 'No Image'
