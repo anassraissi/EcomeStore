@@ -8,7 +8,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'font-awesome/css/font-awesome.min.css';
 import { useEffect } from 'react';
 import { MantineProvider } from '@mantine/core';
-
+import '../styles/HeaderBanner.module.css';
 function MyApp({ Component, pageProps }) {
   useEffect(() => {
     if (typeof window !== 'undefined') {

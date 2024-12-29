@@ -4,6 +4,7 @@ import styles from './Layout.module.css'; // Assuming you will use CSS Modules f
 import Navbar from './Navbar';
 import Footer from './Footer'; // Import Footer component
 import NavOperator from './NavOperator';
+import HeaderBanner from './HeaderBanner';
 
 const Layout = ({ children }) => {
   const [role, setRole] = useState("")
@@ -15,6 +16,7 @@ const Layout = ({ children }) => {
     <div className={styles.wrapper}>
       <div className={styles.container}>
         {role=='operator' || role=='seller' ? <NavOperator/>: <Navbar/> }
+        <HeaderBanner></HeaderBanner>
         <main className={styles.main}>
           {children}
         </main>

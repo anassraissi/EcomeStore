@@ -1,0 +1,68 @@
+.customCarouselImage {
+    height: 400px; /* Adjust the height as needed */
+    object-fit: cover; /* Ensures the image scales proportionally */
+  }
+  
+  .customCarouselContent {
+    width: 50%;
+    transform: translate(0%, -10%);
+    text-align: start;
+  }
+  
+  .customCarouselContent h1 {
+    font-size: 40px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 30px;
+  }
+  
+  .customCarouselContent h1 span {
+    color: #f0263b;
+  }
+  
+  .customCarouselContent p {
+    font-size: 18px;
+    font-weight: 400;
+    color: #322f2f;
+    margin-bottom: 30px;
+  }
+  
+  .btnSlider {
+    border: 1px solid #fff;
+    border-radius: 0;
+    padding: 8px 26px;
+    color: #fff;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+  
+  .carousel-control-prev-icon,
+  .carousel-control-next-icon {
+    background-color: rgba(0, 0, 0, 0.5);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+  }
+  
+  .carousel-control-prev-icon::before,
+  .carousel-control-next-icon::before {
+    content: '';
+  }
+  
+  .customArrow {
+    font-size: 30px;
+    color: white;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  
+  .carousel-control-prev .customArrow {
+    left: 20px;
+  }
+  
+  .carousel-control-next .customArrow {
+    right: 20px;
+  }
+  
