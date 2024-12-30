@@ -1,0 +1,29 @@
+/* styles/AllCategory.module.css */
+.categoryCard {
+    border: 1px solid #ddd;
+    box-shadow: 0 0.125rem 0.25rem rgb(0 0 0 / 8%);
+    margin-bottom: 24px;
+    background-color: #fff;
+}
+
+.categoryCard a {
+    text-decoration: none;
+}
+
+.categoryCardImg {
+    max-height: 260px;
+    overflow: hidden;
+    border-bottom: 1px solid #ccc;
+}
+
+.categoryCardBody {
+    padding: 10px 16px;
+}
+
+.categoryCardBody h5 {
+    margin-bottom: 0px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #000;
+    text-align: center;
+}

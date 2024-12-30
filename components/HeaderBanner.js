@@ -6,7 +6,7 @@ const HeaderBanner = () => {
     <div id="carouselExampleCaptions" className="carousel slide" data-bs-ride="carousel">
       <div className="carousel-inner">
         <div className="carousel-item active">
-          <img src="../images/slider/banner1.jpg" className={`d-block w-100 ${styles.customCarouselImage}`} alt="Banner 1" />
+          <img src="../images/slider/banner3.jpg" className={`d-block w-100 ${styles.customCarouselImage}`} alt="Banner 1" />
           <div className={`carousel-caption d-none d-md-block ${styles.customCarouselContent}`}>
             <h1>
               <span>discount 80 for iphone 16 </span>
@@ -20,7 +20,7 @@ const HeaderBanner = () => {
           </div>
         </div>
         <div className="carousel-item">
-          <img src="/images/slider-2.jpg" className={`d-block w-100 ${styles.customCarouselImage}`} alt="Banner 2" />
+          <img src="../images/slider/banner3.jpg" className={`d-block w-100 ${styles.customCarouselImage}`} alt="Banner 2" />
           <div className={`carousel-caption d-none d-md-block ${styles.customCarouselContent}`}>
             <h1>
               <span>Best Ecommerce Solutions 2 </span> to Boost your Brand Name &amp; Sales
@@ -33,7 +33,7 @@ const HeaderBanner = () => {
           </div>
         </div>
         <div className="carousel-item">
-          <img src="/images/slider-3.jpg" className={`d-block w-100 ${styles.customCarouselImage}`} alt="Banner 3" />
+          <img src="../images/slider/banner3.jpg" className={`d-block w-100 ${styles.customCarouselImage}`} alt="Banner 3" />
           <div className={`carousel-caption d-none d-md-block ${styles.customCarouselContent}`}>
             <h1>
               <span>Best Ecommerce Solutions 3 </span> to Boost your Brand Name &amp; Sales

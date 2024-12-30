@@ -167,7 +167,7 @@ const Navbar = () => {
                   </Link>
                 </li>
                 <li className="nav-item">
-                  <Link href="/categories" legacyBehavior>
+                  <Link href="/AllCategory" legacyBehavior>
                     <a className="nav-link">All Categories</a>
                   </Link>
                 </li>
